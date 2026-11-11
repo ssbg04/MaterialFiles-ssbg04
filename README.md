@@ -23,6 +23,7 @@ An open source Material Design file manager, for Android 5.0+.
 - Root support: View and manage files with root access.
 - Archive support: View, extract and create common compressed files.
 - NAS support: View and manage files on FTP, SFTP, SMB and WebDAV servers.
+- Cloud storage support: View and manage files natively on Google Drive, OneDrive, and Dropbox with OAuth2 PKCE authentication.
 - Themes: Customizable UI colors, plus night mode with optional true black.
 - Linux-aware: Like [Nautilus](https://apps.gnome.org/Nautilus/), knows symbolic links, file permissions and SELinux context.
 - Robust: Uses Linux system calls under the hood, not yet another [`ls` parser](https://news.ycombinator.com/item?id=7994720).
@@ -53,6 +54,54 @@ Because I know people can do it right.
 [Nautilus](https://wiki.gnome.org/Apps/Files) is a beautifully-designed and user-friendly file manager on Linux desktop, and it's fully Linux-aware. [Phonograph](https://github.com/kabouzeid/Phonograph) is an open source Material Design music player app (which I've been using for years), and it has just the right Material Design and implementation.
 
 So, it's time for yet another Android file manager.
+
+## Cloud Storage Setup Guide (Google Drive, OneDrive, Dropbox)
+
+Material Files supports native connections to **Google Drive**, **OneDrive**, and **Dropbox** using OAuth 2.0 PKCE browser sign-in (`http://127.0.0.1:53682/`). All three providers offer free developer credentials.
+
+### 1. Google Drive (REST API v3)
+1. Open the [Google Cloud Console](https://console.cloud.google.com/) and create a new project (e.g., `MaterialFiles`).
+2. Navigate to **APIs & Services** -> [**Library**](https://console.cloud.google.com/apis/library/drive.googleapis.com), search for **Google Drive API**, and click **Enable**.
+3. Go to **APIs & Services** -> **OAuth consent screen** (or **Google Auth Platform**):
+   - Choose **External** and click **Create**.
+   - Fill in the required app name (`MaterialFiles`), support email, and developer contact email.
+   - Under **Audience** / **Test users**, click **+ Add Users** and add your Google account email address.
+4. Go to **APIs & Services** -> [**Credentials**](https://console.cloud.google.com/apis/credentials):
+   - Click **+ Create Credentials** -> **OAuth client ID**.
+   - Select **Desktop app** as the Application type (this automatically permits `http://127.0.0.1:53682/` loopback redirects).
+   - Copy the generated **Client ID** (`*.apps.googleusercontent.com`) and **Client Secret** (`GOCSPX-*`).
+
+### 2. OneDrive (Microsoft Graph API)
+1. Open [Microsoft Entra App Registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) and click **+ New registration**.
+2. Set **Name** to `MaterialFiles`.
+3. Under **Supported account types**, select **Accounts in any organizational directory and personal Microsoft accounts**.
+4. Under **Redirect URI**, select **Public client/native (mobile & desktop)** and enter `http://127.0.0.1:53682/`.
+5. Click **Register** and copy the **Application (client) ID** (leave Client Secret empty for public PKCE clients).
+
+### 3. Dropbox (API v2)
+1. Open the [Dropbox App Console](https://www.dropbox.com/developers/apps) and click **Create app**.
+2. Choose **Scoped access** -> **Full Dropbox**, and give the app a unique name.
+3. Open the **Permissions** tab, enable the following scopes, and click **Submit**:
+   - `account_info.read`
+   - `files.metadata.read` & `files.metadata.write`
+   - `files.content.read` & `files.content.write`
+4. Open the **Settings** tab:
+   - Under **OAuth 2** -> **Redirect URIs**, add `http://127.0.0.1:53682/` and click **Add**.
+   - Copy the **App key** (use as **Client ID**) and **App secret** (use as **Client Secret**).
+
+### Connecting in the App or Build Configuration
+- **In-App Configuration (No Rebuild Required)**:
+  Open the navigation drawer -> **Add storage** -> select **Google Drive**, **OneDrive**, or **Dropbox** -> enter your **OAuth2 Client ID** (and optional **Client Secret**) -> tap **Sign in with browser (OAuth2)** -> tap **Connect and add**.
+- **Build-Time Default Credentials (Optional)**:
+  Add your credentials to `local.properties` (gitignored) or `gradle.properties` to pre-fill them by default:
+  ```properties
+  GDRIVE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+  GDRIVE_CLIENT_SECRET=GOCSPX-your-google-secret
+  ONEDRIVE_CLIENT_ID=your-onedrive-application-client-id
+  ONEDRIVE_CLIENT_SECRET=
+  DROPBOX_CLIENT_ID=your-dropbox-app-key
+  DROPBOX_CLIENT_SECRET=your-dropbox-app-secret
+  ```
 
 ## Inclusion in custom ROMs
 

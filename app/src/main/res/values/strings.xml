@@ -543,6 +543,9 @@
     <string name="storage_add_storage_sftp_server">SFTP server</string>
     <string name="storage_add_storage_smb_server">SMB server</string>
     <string name="storage_add_storage_webdav_server">WebDAV server</string>
+    <string name="storage_add_storage_gdrive_server">Google Drive</string>
+    <string name="storage_add_storage_onedrive_server">OneDrive</string>
+    <string name="storage_add_storage_dropbox_server">Dropbox</string>
     <string name="storage_edit_device_storage_title">Edit device storage</string>
     <string name="storage_edit_device_storage_name">Name</string>
     <string name="storage_edit_device_storage_path">Path</string>
@@ -676,6 +679,33 @@
     <string name="storage_edit_webdav_server_access_token_error_empty">Enter an access token</string>
     <string name="storage_edit_webdav_server_connect_and_add">Connect and add</string>
     <string name="storage_edit_webdav_server_add">Add</string>
+    <string name="storage_edit_cloud_server_title_edit">Edit cloud storage</string>
+    <string name="storage_edit_cloud_server_title_add">Add cloud storage</string>
+    <string name="storage_edit_cloud_server_provider">Cloud provider</string>
+    <string-array name="storage_edit_cloud_server_provider_entries" translatable="false">
+        <item>Google Drive</item>
+        <item>OneDrive</item>
+        <item>Dropbox</item>
+    </string-array>
+    <string name="storage_edit_cloud_server_client_id">OAuth2 Client ID</string>
+    <string name="storage_edit_cloud_server_client_id_error_empty">Enter an OAuth2 Client ID</string>
+    <string name="storage_edit_cloud_server_redirect_uri_helper" translatable="false">Redirect URI: http://127.0.0.1:53682/</string>
+    <string name="storage_edit_cloud_server_client_secret">OAuth2 Client Secret</string>
+    <string name="storage_edit_cloud_server_client_secret_placeholder">Optional for PKCE native clients</string>
+    <string name="storage_edit_cloud_server_oauth_sign_in">Sign in with browser (OAuth2)</string>
+    <string name="storage_edit_cloud_server_oauth_signing_in">Waiting for browser sign-in…</string>
+    <string name="storage_edit_cloud_server_username">Account / Email</string>
+    <string name="storage_edit_cloud_server_username_placeholder">Auto-filled by OAuth2 or enter label</string>
+    <string name="storage_edit_cloud_server_access_token">Access token</string>
+    <string name="storage_edit_cloud_server_access_token_error_empty">Sign in with browser or enter an access token</string>
+    <string name="storage_edit_cloud_server_refresh_token">Refresh token</string>
+    <string name="storage_edit_cloud_server_refresh_token_placeholder">Auto-filled by OAuth2 (optional)</string>
+    <string name="storage_edit_cloud_server_path">Path</string>
+    <string name="storage_edit_cloud_server_path_placeholder">Can be left empty</string>
+    <string name="storage_edit_cloud_server_name">Name</string>
+    <string name="storage_edit_cloud_server_name_placeholder">Use account name</string>
+    <string name="storage_edit_cloud_server_connect_and_add">Connect and add</string>
+    <string name="storage_edit_cloud_server_add">Add</string>
 
     <string name="navigation_storage_subtitle_format">%1$s free of %2$s</string>
     <string name="navigation_add_storage">Add storage…</string>
