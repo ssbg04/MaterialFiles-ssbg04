@@ -236,7 +236,7 @@
             android:name="me.zhanghai.android.files.provider.cloud.client.OAuthCallbackActivity"
             android:exported="true"
             android:noHistory="true"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:theme="@style/Theme.MaterialFiles.Translucent"
             tools:ignore="AppLinkUrlError">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

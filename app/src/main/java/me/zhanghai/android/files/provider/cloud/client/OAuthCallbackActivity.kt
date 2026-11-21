@@ -5,20 +5,20 @@
 
 package me.zhanghai.android.files.provider.cloud.client
 
-import android.app.Activity
 import android.app.ActivityManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import me.zhanghai.android.files.app.AppActivity
 
-class OAuthCallbackActivity : Activity() {
+class OAuthCallbackActivity : AppActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         handleIntent(intent)
         finish()
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
         finish()
