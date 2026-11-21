@@ -74,6 +74,10 @@
             android:title="@string/settings_bookmark_directories_title"
             android:summary="@string/settings_bookmark_directories_summary_empty" />
 
+        <me.zhanghai.android.files.settings.FileRulesPreference
+            android:title="@string/settings_file_rules_title"
+            android:summary="@string/settings_file_rules_summary_empty" />
+
         <me.zhanghai.android.files.settings.RootStrategyPreference
             android:key="@string/pref_key_root_strategy"
             android:title="@string/settings_root_strategy_title"

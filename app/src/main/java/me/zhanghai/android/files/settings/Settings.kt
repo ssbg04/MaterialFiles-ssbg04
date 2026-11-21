@@ -12,6 +12,7 @@ import java8.nio.file.Paths
 import me.zhanghai.android.files.R
 import me.zhanghai.android.files.app.application
 import me.zhanghai.android.files.compat.EnvironmentCompat2
+import me.zhanghai.android.files.fileautomation.FileRule
 import me.zhanghai.android.files.filelist.FileSortOptions
 import me.zhanghai.android.files.filelist.FileViewType
 import me.zhanghai.android.files.filelist.OpenApkDefaultAction
@@ -151,6 +152,9 @@ object Settings {
                 )
             )
         )
+
+    val FILE_RULES: SettingLiveData<List<FileRule>> =
+        ParcelValueSettingLiveData(R.string.pref_key_file_rules, emptyList())
 
     val ROOT_STRATEGY: SettingLiveData<RootStrategy> =
         EnumSettingLiveData(

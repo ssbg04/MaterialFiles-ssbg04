@@ -45,6 +45,11 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import me.zhanghai.android.files.fileautomation.EditFileRuleActivity
+import me.zhanghai.android.files.fileautomation.EditFileRuleFragment
+import me.zhanghai.android.files.fileautomation.FileRuleEngine
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -408,6 +413,9 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         Settings.FILE_LIST_SHOW_HIDDEN_FILES.observe(viewLifecycleOwner) {
             onShowHiddenFilesChanged(it)
         }
+        viewModel.currentPathLiveData.observe(viewLifecycleOwner) {
+            checkAutoRunRules(it)
+        }
     }
 
     override fun onResume() {
@@ -578,6 +586,14 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             }
             R.id.action_create_shortcut -> {
                 createShortcut()
+                true
+            }
+            R.id.action_run_rules -> {
+                runFolderRules()
+                true
+            }
+            R.id.action_add_rule -> {
+                addFolderRule()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -1458,6 +1474,56 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             showToast(R.string.shortcut_created)
         }
+    }
+
+    private var lastAutoRunPath: Path? = null
+
+    private fun checkAutoRunRules(path: Path) {
+        if (lastAutoRunPath == path) {
+            return
+        }
+        lastAutoRunPath = path
+        val rules = Settings.FILE_RULES.valueCompat.filter {
+            it.enabled && it.autoRunOnOpen && it.sourceDirectory == path
+        }
+        if (rules.isEmpty()) {
+            return
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            for (rule in rules) {
+                FileRuleEngine.runRule(rule, requireContext())
+            }
+        }
+    }
+
+    private fun runFolderRules() {
+        val path = currentPath
+        val rules = Settings.FILE_RULES.valueCompat.filter {
+            it.enabled && it.sourceDirectory == path
+        }
+        if (rules.isEmpty()) {
+            showToast(R.string.file_rule_no_rules_for_folder)
+            return
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            showToast(R.string.file_rule_running)
+            var totalCount = 0
+            for (rule in rules) {
+                totalCount += FileRuleEngine.runRule(rule, requireContext())
+            }
+            if (totalCount > 0) {
+                showToast(getString(R.string.file_rule_matched_files_total, totalCount))
+            } else {
+                showToast(R.string.file_rule_no_files_matched_any)
+            }
+        }
+    }
+
+    private fun addFolderRule() {
+        startActivitySafe(
+            EditFileRuleActivity::class.createIntent()
+                .putArgs(EditFileRuleFragment.Args(initialSourceDirectory = currentPath))
+        )
     }
 
     override fun showPropertiesDialog(file: FileItem) {

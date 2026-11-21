@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 Material Files Fork
+  -->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <me.zhanghai.android.files.ui.CoordinatorAppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorAppBarSurface"
+        android:theme="?actionBarTheme"
+        app:liftOnScroll="true"
+        app:liftOnScrollTargetViewId="@id/scrollView">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            app:popupTheme="?actionBarPopupTheme" />
+    </me.zhanghai.android.files.ui.CoordinatorAppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/screen_edge_margin"
+            android:paddingEnd="@dimen/screen_edge_margin"
+            android:paddingTop="16dp"
+            android:paddingBottom="24dp"
+            android:orientation="vertical">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/nameLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/file_rule_name">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/nameEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/enabledSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:checked="true"
+                android:text="@string/file_rule_enabled"
+                android:textAppearance="?textAppearanceListItem" />
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/autoRunOnOpenSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/file_rule_auto_run_on_open"
+                android:textAppearance="?textAppearanceListItem" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/file_rule_section_source"
+                android:textAppearance="?textAppearanceListItemSecondary"
+                android:textColor="?colorSecondary" />
+
+            <me.zhanghai.android.files.ui.ReadOnlyTextInputLayout
+                android:id="@+id/sourcePathLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="@string/file_rule_source_directory"
+                app:endIconDrawable="@drawable/directory_icon_white_24dp"
+                app:endIconMode="custom">
+
+                <me.zhanghai.android.files.ui.ReadOnlyTextInputEditText
+                    android:id="@+id/sourcePathEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </me.zhanghai.android.files.ui.ReadOnlyTextInputLayout>
+
+            <androidx.appcompat.widget.SwitchCompat
+                android:id="@+id/includeSubdirectoriesSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/file_rule_include_subdirectories"
+                android:textAppearance="?textAppearanceListItem" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/file_rule_section_conditions"
+                android:textAppearance="?textAppearanceListItemSecondary"
+                android:textColor="?colorSecondary" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/extensionsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:hint="@string/file_rule_extensions"
+                app:helperText="@string/file_rule_extensions_hint"
+                app:helperTextEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/extensionsEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/namePatternLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/file_rule_name_pattern"
+                app:helperText="@string/file_rule_name_pattern_hint"
+                app:helperTextEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/namePatternEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:importantForAutofill="no"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/isRegexCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/file_rule_use_regex" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/file_rule_section_action"
+                android:textAppearance="?textAppearanceListItemSecondary"
+                android:textColor="?colorSecondary" />
+
+            <RadioGroup
+                android:id="@+id/actionRadioGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/actionMoveRadio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:checked="true"
+                    android:text="@string/file_rule_action_move" />
+
+                <RadioButton
+                    android:id="@+id/actionCopyRadio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/file_rule_action_copy" />
+            </RadioGroup>
+
+            <me.zhanghai.android.files.ui.ReadOnlyTextInputLayout
+                android:id="@+id/targetPathLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:hint="@string/file_rule_target_directory"
+                app:endIconDrawable="@drawable/directory_icon_white_24dp"
+                app:endIconMode="custom">
+
+                <me.zhanghai.android.files.ui.ReadOnlyTextInputEditText
+                    android:id="@+id/targetPathEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </me.zhanghai.android.files.ui.ReadOnlyTextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:orientation="vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/runNowButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/file_rule_run_now"
+                    app:icon="@drawable/play_icon_white_24dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/deleteButton"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/file_rule_delete"
+                    android:textColor="?colorError"
+                    android:visibility="gone"
+                    app:icon="@drawable/delete_icon_control_normal_24dp"
+                    app:iconTint="?colorError" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

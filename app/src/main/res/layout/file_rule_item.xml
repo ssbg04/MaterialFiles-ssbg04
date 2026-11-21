@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 Material Files Fork
+  -->
+<me.zhanghai.android.foregroundcompat.ForegroundLinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/two_line_list_item_height"
+    android:background="?android:colorBackground"
+    android:foreground="?selectableItemBackground"
+    android:gravity="center_vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:layout_width="@dimen/icon_size"
+        android:layout_height="@dimen/icon_size"
+        android:layout_marginStart="@dimen/screen_edge_margin"
+        android:layout_marginEnd="@dimen/content_start_from_screen_edge_margin_minus_24dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/filter_icon_control_normal_24dp"
+        app:tint="?colorControlNormal" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/nameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?textAppearanceListItem" />
+
+        <TextView
+            android:id="@+id/routeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="?textAppearanceListItemSecondary"
+            android:textColor="?android:textColorSecondary" />
+
+        <TextView
+            android:id="@+id/detailsText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="12sp"
+            android:textAppearance="?textAppearanceListItemSecondary"
+            android:textColor="?android:textColorSecondary" />
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/runButton"
+        android:layout_width="@dimen/touch_target_size"
+        android:layout_height="@dimen/touch_target_size"
+        android:background="?selectableItemBackgroundBorderless"
+        android:contentDescription="@string/file_rule_run_now"
+        android:padding="@dimen/touch_target_icon_padding"
+        android:src="@drawable/play_icon_white_24dp"
+        app:tint="?colorSecondary" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/enabledSwitch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp" />
+
+    <ImageView
+        android:id="@+id/dragHandleView"
+        android:layout_width="@dimen/touch_target_size"
+        android:layout_height="@dimen/touch_target_size"
+        android:layout_marginEnd="@dimen/screen_edge_margin_minus_12dp_at_least_8dp"
+        android:padding="@dimen/touch_target_icon_padding"
+        android:src="@drawable/drag_handle_icon_white_24dp"
+        app:tint="?colorControlNormal" />
+</me.zhanghai.android.foregroundcompat.ForegroundLinearLayout>
