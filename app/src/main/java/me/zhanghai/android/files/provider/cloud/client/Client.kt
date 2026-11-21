@@ -55,6 +55,7 @@ object Client {
             if (client == null) {
                 val authInterceptor = OAuthAuthenticatorInterceptor(authority)
                 client = okHttpClient.newBuilder()
+                    .dns(ResilientDns)
                     .followRedirects(true)
                     .followSslRedirects(true)
                     .addInterceptor(authInterceptor)

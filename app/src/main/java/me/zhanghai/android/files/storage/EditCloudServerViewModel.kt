@@ -36,6 +36,15 @@ class EditCloudServerViewModel : ViewModel() {
     private var activeServerSocket: ServerSocket? = null
     private var oauthJob: Job? = null
 
+    var savedCodeVerifier: String? = null
+        private set
+    var savedRedirectUri: String? = null
+        private set
+    var savedClientId: String? = null
+        private set
+    var savedClientSecret: String? = null
+        private set
+
     fun startOAuthSignIn(
         provider: CloudProvider,
         clientId: String,
@@ -43,6 +52,13 @@ class EditCloudServerViewModel : ViewModel() {
         onLaunchBrowser: (Uri) -> Unit
     ) {
         cancelOAuthSignIn()
+        savedClientId = clientId
+        savedClientSecret = clientSecret
+        val codeVerifier = OAuth2Helper.generateCodeVerifier()
+        savedCodeVerifier = codeVerifier
+        val codeChallenge = OAuth2Helper.generateCodeChallenge(codeVerifier)
+        val state = OAuth2Helper.generateState()
+
         oauthJob = viewModelScope.launch {
             _oauthState.value = ActionState.Running(provider)
             _oauthState.value = try {
@@ -51,9 +67,7 @@ class EditCloudServerViewModel : ViewModel() {
                 }
                 activeServerSocket = serverSocket
                 val redirectUri = OAuth2Helper.getRedirectUri(serverSocket.localPort)
-                val codeVerifier = OAuth2Helper.generateCodeVerifier()
-                val codeChallenge = OAuth2Helper.generateCodeChallenge(codeVerifier)
-                val state = OAuth2Helper.generateState()
+                savedRedirectUri = redirectUri
                 val authUri = OAuth2Helper.buildAuthorizationUrl(
                     provider,
                     clientId,
@@ -80,6 +94,45 @@ class EditCloudServerViewModel : ViewModel() {
                 ActionState.Error(provider, e)
             } finally {
                 closeActiveSocket()
+            }
+        }
+    }
+
+    fun completeWithCode(
+        provider: CloudProvider,
+        clientId: String,
+        clientSecret: String,
+        urlOrCode: String
+    ) {
+        val (code, _) = OAuth2Helper.extractCodeFromUrl(urlOrCode)
+        if (code.isEmpty()) {
+            _oauthState.value = ActionState.Error(
+                provider,
+                IllegalArgumentException("No authorization code found in input")
+            )
+            return
+        }
+        val verifier = savedCodeVerifier ?: OAuth2Helper.generateCodeVerifier()
+        val redirectUri = savedRedirectUri ?: OAuth2Helper.getRedirectUri(OAuth2Helper.DEFAULT_LOOPBACK_PORT)
+        cancelOAuthSignIn()
+        viewModelScope.launch {
+            _oauthState.value = ActionState.Running(provider)
+            _oauthState.value = try {
+                val result = withContext(Dispatchers.IO) {
+                    val auth = OAuth2Helper.exchangeAuthorizationCode(
+                        provider,
+                        clientId,
+                        clientSecret,
+                        code,
+                        redirectUri,
+                        verifier
+                    )
+                    val username = OAuth2Helper.fetchAccountUsername(provider, auth.accessToken)
+                    OAuthResult(auth, username)
+                }
+                ActionState.Success(provider, result)
+            } catch (e: Exception) {
+                ActionState.Error(provider, e)
             }
         }
     }

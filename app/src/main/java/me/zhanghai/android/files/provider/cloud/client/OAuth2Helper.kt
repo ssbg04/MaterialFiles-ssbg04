@@ -25,6 +25,7 @@ object OAuth2Helper {
     private const val SOCKET_TIMEOUT_MILLIS = 300_000
 
     private val secureRandom = SecureRandom()
+    private val cloudHttpClient by lazy { okHttpClient.newBuilder().dns(ResilientDns).build() }
 
     fun generateCodeVerifier(): String {
         val bytes = ByteArray(32)
@@ -55,23 +56,46 @@ object OAuth2Helper {
 
     @Throws(IOException::class)
     fun createLoopbackServer(): ServerSocket {
-        val loopbackAddress = InetAddress.getByName(LOOPBACK_HOST)
-        return try {
-            ServerSocket().apply {
-                reuseAddress = true
-                soTimeout = SOCKET_TIMEOUT_MILLIS
-                bind(InetSocketAddress(loopbackAddress, DEFAULT_LOOPBACK_PORT))
-            }
-        } catch (e: IOException) {
-            ServerSocket().apply {
-                reuseAddress = true
-                soTimeout = SOCKET_TIMEOUT_MILLIS
-                bind(InetSocketAddress(loopbackAddress, 0))
+        for (attempt in 1..4) {
+            try {
+                return ServerSocket().apply {
+                    reuseAddress = true
+                    soTimeout = SOCKET_TIMEOUT_MILLIS
+                    bind(InetSocketAddress(DEFAULT_LOOPBACK_PORT), 50)
+                }
+            } catch (e: IOException) {
+                if (attempt == 4) {
+                    return ServerSocket().apply {
+                        reuseAddress = true
+                        soTimeout = SOCKET_TIMEOUT_MILLIS
+                        bind(InetSocketAddress(0), 50)
+                    }
+                }
+                try {
+                    Thread.sleep(150)
+                } catch (ignored: InterruptedException) {
+                }
             }
         }
+        return ServerSocket(0)
     }
 
     fun getRedirectUri(port: Int): String = "http://$LOOPBACK_HOST:$port/"
+
+    fun extractCodeFromUrl(urlOrCode: String): Pair<String, String?> {
+        val trimmed = urlOrCode.trim()
+        if (!trimmed.contains("://") && !trimmed.contains("?") && !trimmed.contains("&")) {
+            return trimmed to null
+        }
+        val safeUri = if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("me.zhanghai.android.files://")) {
+            Uri.parse(trimmed)
+        } else {
+            Uri.parse("http://127.0.0.1/?$trimmed")
+        }
+        val code = safeUri.getQueryParameter("code") ?: trimmed
+        val state = safeUri.getQueryParameter("state")
+        return code to state
+    }
 
     fun buildAuthorizationUrl(
         provider: CloudProvider,
@@ -206,7 +230,7 @@ object OAuth2Helper {
             .post(formBuilder.build())
             .header("Accept", "application/json")
             .build()
-        okHttpClient.newCall(request).execute().use { response ->
+        cloudHttpClient.newCall(request).execute().use { response ->
             val responseBody = response.body.string()
             if (!response.isSuccessful) {
                 throw IOException("Token exchange failed (${response.code}): $responseBody")
@@ -248,7 +272,7 @@ object OAuth2Helper {
             .post(formBuilder.build())
             .header("Accept", "application/json")
             .build()
-        okHttpClient.newCall(request).execute().use { response ->
+        cloudHttpClient.newCall(request).execute().use { response ->
             val responseBody = response.body.string()
             if (!response.isSuccessful) {
                 throw IOException("Token refresh failed (${response.code}): $responseBody")
@@ -289,7 +313,7 @@ object OAuth2Helper {
                     .header("Authorization", "Bearer $accessToken")
                     .build()
         }
-        okHttpClient.newCall(request).execute().use { response ->
+        cloudHttpClient.newCall(request).execute().use { response ->
             val body = response.body.string()
             if (!response.isSuccessful) {
                 return provider.displayName

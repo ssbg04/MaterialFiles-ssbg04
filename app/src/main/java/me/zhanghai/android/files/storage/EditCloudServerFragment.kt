@@ -93,6 +93,7 @@ class EditCloudServerFragment : Fragment() {
         }
 
         binding.clientIdEdit.hideTextInputLayoutErrorOnTextChange(binding.clientIdLayout)
+        binding.clientSecretEdit.hideTextInputLayoutErrorOnTextChange(binding.clientSecretLayout)
         binding.accessTokenEdit.hideTextInputLayoutErrorOnTextChange(binding.accessTokenLayout)
         binding.usernameEdit.doAfterTextChanged { updateNamePlaceholder() }
         binding.pathEdit.doAfterTextChanged { updateNamePlaceholder() }
@@ -103,6 +104,10 @@ class EditCloudServerFragment : Fragment() {
 
         binding.oauthSignInButton.setOnClickListener {
             startOAuthSignIn()
+        }
+
+        binding.pasteCodeButton.setOnClickListener {
+            showPasteCodeDialog()
         }
 
         binding.saveOrConnectAndAddButton.setText(
@@ -174,6 +179,8 @@ class EditCloudServerFragment : Fragment() {
                     getString(R.string.storage_edit_cloud_server_client_id_helper_gdrive)
                 binding.clientSecretLayout.helperText =
                     getString(R.string.storage_edit_cloud_server_client_secret_helper_gdrive)
+                binding.clientSecretLayout.placeholderText =
+                    getString(R.string.storage_edit_cloud_server_client_secret_placeholder_gdrive)
                 binding.oauthSignInButton.text =
                     getString(R.string.storage_edit_cloud_server_oauth_sign_in_gdrive)
             }
@@ -184,6 +191,8 @@ class EditCloudServerFragment : Fragment() {
                     getString(R.string.storage_edit_cloud_server_client_id_helper_onedrive)
                 binding.clientSecretLayout.helperText =
                     getString(R.string.storage_edit_cloud_server_client_secret_helper_onedrive)
+                binding.clientSecretLayout.placeholderText =
+                    getString(R.string.storage_edit_cloud_server_client_secret_placeholder)
                 binding.oauthSignInButton.text =
                     getString(R.string.storage_edit_cloud_server_oauth_sign_in_onedrive)
             }
@@ -194,6 +203,8 @@ class EditCloudServerFragment : Fragment() {
                     getString(R.string.storage_edit_cloud_server_client_id_helper_dropbox)
                 binding.clientSecretLayout.helperText =
                     getString(R.string.storage_edit_cloud_server_client_secret_helper_dropbox)
+                binding.clientSecretLayout.placeholderText =
+                    getString(R.string.storage_edit_cloud_server_client_secret_placeholder)
                 binding.oauthSignInButton.text =
                     getString(R.string.storage_edit_cloud_server_oauth_sign_in_dropbox)
             }
@@ -269,9 +280,67 @@ class EditCloudServerFragment : Fragment() {
         }
         val clientSecret = binding.clientSecretEdit.text.toString().trim()
             .ifEmpty { currentProvider.defaultClientSecret }
+        if (currentProvider == CloudProvider.GDRIVE && clientSecret.isEmpty()) {
+            binding.clientSecretLayout.error =
+                getString(R.string.storage_edit_cloud_server_client_secret_error_gdrive)
+            binding.clientSecretEdit.requestFocus()
+            return
+        }
         viewModel.startOAuthSignIn(currentProvider, clientId, clientSecret) { authUri ->
             startActivitySafe(Intent(Intent.ACTION_VIEW, authUri))
         }
+    }
+
+    private fun showPasteCodeDialog() {
+        val currentProvider = provider
+        val clientId = binding.clientIdEdit.text.toString().trim()
+            .ifEmpty { currentProvider.defaultClientId }
+        val clientSecret = binding.clientSecretEdit.text.toString().trim()
+            .ifEmpty { currentProvider.defaultClientSecret }
+        if (clientId.isEmpty()) {
+            binding.clientIdLayout.error =
+                getString(R.string.storage_edit_cloud_server_client_id_error_empty)
+            binding.clientIdEdit.requestFocus()
+            return
+        }
+        if (currentProvider == CloudProvider.GDRIVE && clientSecret.isEmpty()) {
+            binding.clientSecretLayout.error =
+                getString(R.string.storage_edit_cloud_server_client_secret_error_gdrive)
+            binding.clientSecretEdit.requestFocus()
+            return
+        }
+
+        val context = requireContext()
+        val inputLayout = com.google.android.material.textfield.TextInputLayout(context).apply {
+            hint = getString(R.string.storage_edit_cloud_server_paste_code_hint)
+            setPadding(48, 16, 48, 16)
+        }
+        val editText = com.google.android.material.textfield.TextInputEditText(context).apply {
+            isSingleLine = false
+            maxLines = 5
+        }
+        inputLayout.addView(editText)
+
+        val clipboard = context.getSystemService(android.content.ClipboardManager::class.java)
+        val clipText = clipboard?.primaryClip?.getItemAt(0)?.text?.toString()?.trim()
+        if (!clipText.isNullOrEmpty() && (clipText.contains("code=") || clipText.startsWith("4/"))) {
+            editText.setText(clipText)
+        }
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.storage_edit_cloud_server_paste_code_dialog_title)
+            .setMessage(R.string.storage_edit_cloud_server_paste_code_dialog_message)
+            .setView(inputLayout)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val text = editText.text?.toString()?.trim().orEmpty()
+                if (text.isNotEmpty()) {
+                    viewModel.completeWithCode(currentProvider, clientId, clientSecret, text)
+                } else {
+                    showToast(R.string.storage_edit_cloud_server_paste_code_error_empty)
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
     }
 
     private fun onOAuthStateChanged(
@@ -280,16 +349,19 @@ class EditCloudServerFragment : Fragment() {
         when (state) {
             is ActionState.Ready -> {
                 binding.oauthSignInButton.isEnabled = true
+                binding.pasteCodeButton.isEnabled = true
                 binding.oauthSignInButton.setText(R.string.storage_edit_cloud_server_oauth_sign_in)
             }
             is ActionState.Running -> {
                 binding.oauthSignInButton.isEnabled = false
+                binding.pasteCodeButton.isEnabled = false
                 binding.oauthSignInButton.setText(
                     R.string.storage_edit_cloud_server_oauth_signing_in
                 )
             }
             is ActionState.Success -> {
                 binding.oauthSignInButton.isEnabled = true
+                binding.pasteCodeButton.isEnabled = true
                 binding.oauthSignInButton.setText(R.string.storage_edit_cloud_server_oauth_sign_in)
                 val result = state.result
                 if (binding.usernameEdit.text.isNullOrEmpty() && result.username.isNotEmpty()) {
@@ -304,6 +376,7 @@ class EditCloudServerFragment : Fragment() {
             }
             is ActionState.Error -> {
                 binding.oauthSignInButton.isEnabled = true
+                binding.pasteCodeButton.isEnabled = true
                 binding.oauthSignInButton.setText(R.string.storage_edit_cloud_server_oauth_sign_in)
                 val throwable = state.throwable
                 throwable.printStackTrace()
@@ -379,6 +452,13 @@ class EditCloudServerFragment : Fragment() {
                 getString(R.string.storage_edit_cloud_server_client_id_error_empty)
             if (errorEdit == null) {
                 errorEdit = binding.clientIdEdit
+            }
+        }
+        if (currentProvider == CloudProvider.GDRIVE && refreshToken.isNotEmpty() && clientSecret.isEmpty()) {
+            binding.clientSecretLayout.error =
+                getString(R.string.storage_edit_cloud_server_client_secret_error_gdrive)
+            if (errorEdit == null) {
+                errorEdit = binding.clientSecretEdit
             }
         }
         if (errorEdit != null) {

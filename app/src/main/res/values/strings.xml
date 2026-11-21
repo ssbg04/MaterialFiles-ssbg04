@@ -721,6 +721,13 @@
     <string name="storage_edit_cloud_server_client_secret_placeholder">Optional for PKCE native clients</string>
     <string name="storage_edit_cloud_server_oauth_sign_in">Sign in with browser (OAuth2)</string>
     <string name="storage_edit_cloud_server_oauth_signing_in">Waiting for browser sign-in…</string>
+    <string name="storage_edit_cloud_server_paste_code_button">Paste redirect URL or code</string>
+    <string name="storage_edit_cloud_server_paste_code_dialog_title">Paste Authorization URL or Code</string>
+    <string name="storage_edit_cloud_server_paste_code_dialog_message">If browser shows \"This site can\'t be reached\" on 127.0.0.1, copy the entire address from your browser\'s address bar and paste it below:</string>
+    <string name="storage_edit_cloud_server_paste_code_hint">http://127.0.0.1:53682/?state=...&amp;code=...</string>
+    <string name="storage_edit_cloud_server_paste_code_error_empty">Please enter or paste the URL or authorization code</string>
+    <string name="storage_edit_cloud_server_client_secret_error_gdrive">Client Secret (GOCSPX-...) is required for Google Drive</string>
+    <string name="storage_edit_cloud_server_client_secret_placeholder_gdrive">Required (GOCSPX-...)</string>
     <string name="storage_edit_cloud_server_username">Account / Email</string>
     <string name="storage_edit_cloud_server_username_placeholder">Auto-filled by OAuth2 or enter label</string>
     <string name="storage_edit_cloud_server_access_token">Access token</string>

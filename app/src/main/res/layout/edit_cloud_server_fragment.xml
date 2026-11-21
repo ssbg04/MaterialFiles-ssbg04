@@ -119,8 +119,17 @@
                         android:id="@+id/oauthSignInButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
+                        android:layout_marginBottom="8dp"
                         android:text="@string/storage_edit_cloud_server_oauth_sign_in"
+                        style="?materialButtonOutlinedStyle" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pasteCodeButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:text="@string/storage_edit_cloud_server_paste_code_button"
+                        app:icon="@drawable/paste_icon_control_normal_24dp"
                         style="?materialButtonOutlinedStyle" />
 
                     <com.google.android.material.textfield.TextInputLayout
