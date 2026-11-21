@@ -89,19 +89,77 @@ Material Files supports native connections to **Google Drive**, **OneDrive**, an
    - Under **OAuth 2** -> **Redirect URIs**, add `http://127.0.0.1:53682/` and click **Add**.
    - Copy the **App key** (use as **Client ID**) and **App secret** (use as **Client Secret**).
 
-### Connecting in the App or Build Configuration
-- **In-App Configuration (No Rebuild Required)**:
-  Open the navigation drawer -> **Add storage** -> select **Google Drive**, **OneDrive**, or **Dropbox** -> enter your **OAuth2 Client ID** (and optional **Client Secret**) -> tap **Sign in with browser (OAuth2)** -> tap **Connect and add**.
-- **Build-Time Default Credentials (Optional)**:
-  Add your credentials to `local.properties` (gitignored) or `gradle.properties` to pre-fill them by default:
-  ```properties
-  GDRIVE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
-  GDRIVE_CLIENT_SECRET=GOCSPX-your-google-secret
-  ONEDRIVE_CLIENT_ID=your-onedrive-application-client-id
-  ONEDRIVE_CLIENT_SECRET=
-  DROPBOX_CLIENT_ID=your-dropbox-app-key
-  DROPBOX_CLIENT_SECRET=your-dropbox-app-secret
-  ```
+### In-App Configuration Guide (Step-by-Step per Provider)
+
+No app rebuild is required. You can add your cloud accounts right inside the app interface.
+
+#### A. Google Drive
+1. Open the left navigation drawer -> tap **Add storage** -> tap **Google Drive**.
+2. **Cloud provider**: Automatically set to `Google Drive`.
+3. **OAuth2 Client ID**: Paste your `*.apps.googleusercontent.com` Desktop Client ID.
+4. **OAuth2 Client Secret**: Paste your `GOCSPX-*` client secret.
+5. Tap **Sign in with browser (OAuth2)**:
+   - Your browser will open the Google Sign-In consent page.
+   - Select your Google account (must match one of the **Test users** added in Google Cloud Console).
+   - If you see "Google hasn't verified this app", click **Advanced** -> **Go to MaterialFiles (unsafe)** -> click **Continue**.
+   - Grant permission to view and manage files in Google Drive.
+   - The browser will display *"Authentication Successful. You can close this tab and return to Material Files."*
+6. Switch back to Material Files:
+   - **Account / Email**, **Access token**, and **Refresh token** are automatically filled in.
+7. *(Optional)* **Path**: Leave empty to access your full Drive root, or enter a subfolder name (e.g. `/Documents`).
+8. *(Optional)* **Name**: Enter a custom label for the sidebar (e.g. `Personal Drive`).
+9. Tap **Connect and add** (validates directory listing and pins the storage to your drawer).
+
+---
+
+#### B. OneDrive
+1. Open the left navigation drawer -> tap **Add storage** -> tap **OneDrive**.
+2. **Cloud provider**: Automatically set to `OneDrive`.
+3. **OAuth2 Client ID**: Paste your Microsoft Entra **Application (client) ID** (e.g. `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
+4. **OAuth2 Client Secret**: Leave empty (PKCE public clients do not need a secret).
+5. Tap **Sign in with browser (OAuth2)**:
+   - Your browser will open the Microsoft login page.
+   - Sign in with your personal Microsoft or organizational account.
+   - Accept the requested permissions (`Files.ReadWrite.All`, `offline_access`, `User.Read`).
+   - The browser displays *"Authentication Successful"*.
+6. Switch back to Material Files:
+   - **Account / Email**, **Access token**, and **Refresh token** are automatically populated.
+7. *(Optional)* **Path**: Leave empty for OneDrive root, or specify a subfolder (e.g. `/Photos`).
+8. *(Optional)* **Name**: Enter a custom label (e.g. `OneDrive School`).
+9. Tap **Connect and add**.
+
+---
+
+#### C. Dropbox
+1. Open the left navigation drawer -> tap **Add storage** -> tap **Dropbox**.
+2. **Cloud provider**: Automatically set to `Dropbox`.
+3. **OAuth2 Client ID**: Paste your Dropbox **App key**.
+4. **OAuth2 Client Secret**: Paste your Dropbox **App secret**.
+5. Tap **Sign in with browser (OAuth2)**:
+   - Your browser will open the Dropbox authorization page.
+   - Log into Dropbox and click **Allow**.
+   - The browser displays *"Authentication Successful"*.
+6. Switch back to Material Files:
+   - **Account / Email**, **Access token**, and **Refresh token** are automatically populated.
+7. *(Optional)* **Path**: Leave empty for root, or specify a subfolder (e.g. `/Work`).
+8. *(Optional)* **Name**: Enter a custom label (e.g. `Dropbox Backup`).
+9. Tap **Connect and add**.
+
+> **Tip (Direct Token Entry):** If you already have a temporary or permanent OAuth Access Token (such as a *Generated access token* from the Dropbox App Console), you can paste it directly into the **Access token** field and tap **Connect and add** without using browser login.
+
+---
+
+### Build-Time Default Credentials (Optional)
+If you build the app from source and want Client IDs and Secrets pre-filled automatically on the "Add storage" screen, add them to `local.properties` (gitignored):
+```properties
+GDRIVE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GDRIVE_CLIENT_SECRET=GOCSPX-your-google-secret
+ONEDRIVE_CLIENT_ID=your-onedrive-application-client-id
+ONEDRIVE_CLIENT_SECRET=
+DROPBOX_CLIENT_ID=your-dropbox-app-key
+DROPBOX_CLIENT_SECRET=your-dropbox-app-secret
+```
+Run `.\gradlew installDebug` to install with the pre-configured credentials.
 
 ## Inclusion in custom ROMs
 

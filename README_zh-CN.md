@@ -21,6 +21,7 @@
 - Root 支持：使用 root 权限查看和管理文件。
 - 压缩文件支持：查看、提取和创建常见的压缩文件。
 - NAS 支持：查看和管理 FTP、SFTP、SMB 和 WebDAV 服务器上的文件。
+- 云存储支持：原生连接并管理 Google Drive、OneDrive 和 Dropbox，支持 OAuth 2.0 PKCE 认证。
 - 主题：可定制的界面颜色，以及可选纯黑的夜间模式。
 - Linux 友好：类似 [Nautilus](https://wiki.gnome.org/action/show/Apps/Files)，支持符号链接、文件权限和 SELinux 上下文。
 - 健壮性：使用 Linux 系统调用实现，而不是另一个 [`ls` 解析器](https://news.ycombinator.com/item?id=7994720)。
@@ -51,6 +52,80 @@
 [Nautilus](https://wiki.gnome.org/Apps/Files) 是一个设计美观并且用户友好的 Linux 桌面上的文件管理器，并且同时做到了 Linux 友好。[Phonograph](https://github.com/kabouzeid/Phonograph) 是一个开源的 Material Design 音乐播放其应用（我自己已经使用多年），而它也有着绝佳的 Material Design 设计和实现。
 
 所以，是时候再编写一个 Android 文件管理器了。
+
+## 云存储配置指南 (Google Drive, OneDrive, Dropbox)
+
+Material Files 原生支持通过浏览器 OAuth 2.0 PKCE (`http://127.0.0.1:53682/`) 连接 **Google Drive**、**OneDrive** 和 **Dropbox**。所有云平台均提供免费个人开发者凭据。
+
+### 凭据获取
+
+#### 1. Google Drive (REST API v3)
+1. 访问 [Google Cloud Console](https://console.cloud.google.com/) 创建新项目（例如 `MaterialFiles`）。
+2. 在 **API 与服务** -> [**库**](https://console.cloud.google.com/apis/library/drive.googleapis.com) 中搜索并启用 **Google Drive API**。
+3. 进入 **OAuth 同意屏幕**：
+   - 用户类型选择 **外部**，点击 **创建**。
+   - 填写应用名称、支持邮箱及开发者邮箱。
+   - 在 **受众/测试用户** 下，点击 **+ 添加用户**，填入你的 Google 账号邮箱并保存。
+4. 进入 **凭据** -> **+ 创建凭据** -> **OAuth 客户端 ID**：
+   - 应用类型选择 **桌面应用**（Desktop app）。
+   - 复制生成的 **客户端 ID** (`*.apps.googleusercontent.com`) 和 **客户端密钥** (`GOCSPX-*`)。
+
+#### 2. OneDrive (Microsoft Graph API)
+1. 访问 [Microsoft Entra 应用注册](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade)，点击 **+ 新注册**。
+2. 填写应用名称 `MaterialFiles`。
+3. 支持的账户类型选择 **任何组织目录中的账户及个人 Microsoft 账户**。
+4. 重定向 URI 选择 **公共客户端/本机 (移动和桌面)**，输入 `http://127.0.0.1:53682/`。
+5. 注册完成后复制 **应用程序 (客户端) ID**（PKCE 公共客户端无需填写密钥）。
+
+#### 3. Dropbox (API v2)
+1. 访问 [Dropbox App Console](https://www.dropbox.com/developers/apps)，点击 **Create app**。
+2. 选择 **Scoped access** -> **Full Dropbox** 并命名应用。
+3. 在 **Permissions** 选项卡中勾选 `account_info.read`、`files.metadata.read/write`、`files.content.read/write` 并提交。
+4. 在 **Settings** 选项卡的 **Redirect URIs** 中添加 `http://127.0.0.1:53682/`。
+5. 复制 **App key**（作为客户端 ID）和 **App secret**（作为客户端密钥）。
+
+---
+
+### 应用内配置操作步骤 (免重新编译)
+
+#### A. Google Drive
+1. 打开左侧抽屉菜单 -> 点击 **添加存储** -> 选择 **Google Drive**。
+2. **客户端 ID**：粘贴你的 Google Desktop Client ID。
+3. **客户端密钥**：粘贴你的 `GOCSPX-*` 密钥。
+4. 点击 **使用浏览器登录 (OAuth2)**：
+   - 浏览器将打开 Google 登录授权页。
+   - 选择你的 Google 账号（需与测试用户列表一致）。
+   - 看到“Google 尚未验证此应用”时，点击 **高级** -> **转到 MaterialFiles (不安全)** -> 点击 **继续**。
+   - 授予网盘文件访问权限，浏览器提示授权成功后关闭页面并切回应用。
+5. 应用将自动回填 **账号/邮箱**、**访问令牌** 与 **刷新令牌**。
+6. *(可选)* **路径**：留空访问整个网盘，或输入特定子目录（例如 `/Documents`）。
+7. *(可选)* **名称**：输入侧边栏显示的自定义名称。
+8. 点击 **连接并添加**。
+
+#### B. OneDrive
+1. 打开左侧抽屉菜单 -> 点击 **添加存储** -> 选择 **OneDrive**。
+2. **客户端 ID**：粘贴 Microsoft Entra 的 **应用程序 (客户端) ID**。
+3. **客户端密钥**：保持留空。
+4. 点击 **使用浏览器登录 (OAuth2)**：
+   - 浏览器打开微软登录页面。
+   - 登录你的微软个人或企业账号并接受权限请求。
+   - 浏览器提示成功后切回应用。
+5. 应用自动回填账号及令牌信息。
+6. 点击 **连接并添加**。
+
+#### C. Dropbox
+1. 打开左侧抽屉菜单 -> 点击 **添加存储** -> 选择 **Dropbox**。
+2. **客户端 ID**：粘贴 Dropbox **App key**。
+3. **客户端密钥**：粘贴 Dropbox **App secret**。
+4. 点击 **使用浏览器登录 (OAuth2)**：
+   - 登录 Dropbox 并点击 **Allow** 授权。
+   - 提示授权成功后切回应用。
+5. 应用自动回填账号及令牌信息。
+6. 点击 **连接并添加**。
+
+> **提示 (直接填入令牌)**：若已有访问令牌，亦可直接手动粘贴至 **访问令牌** 栏并点击 **连接并添加**。
+
+---
 
 ## 在定制 ROM 中集成
 
