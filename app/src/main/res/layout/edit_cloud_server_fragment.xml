@@ -71,6 +71,16 @@
                             android:inputType="none" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/guideButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="-8dp"
+                        android:layout_marginBottom="12dp"
+                        android:text="@string/storage_edit_cloud_server_guide_button"
+                        app:icon="@drawable/information_icon_white_24dp"
+                        style="?materialButtonOutlinedStyle" />
+
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/clientIdLayout"
                         android:layout_width="match_parent"

@@ -2,6 +2,7 @@ package me.zhanghai.android.files.storage
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -95,6 +97,10 @@ class EditCloudServerFragment : Fragment() {
         binding.usernameEdit.doAfterTextChanged { updateNamePlaceholder() }
         binding.pathEdit.doAfterTextChanged { updateNamePlaceholder() }
 
+        binding.guideButton.setOnClickListener {
+            showSetupGuideDialog()
+        }
+
         binding.oauthSignInButton.setOnClickListener {
             startOAuthSignIn()
         }
@@ -160,6 +166,68 @@ class EditCloudServerFragment : Fragment() {
         if (binding.clientSecretEdit.text.isNullOrEmpty()) {
             binding.clientSecretEdit.setText(newProvider.defaultClientSecret)
         }
+        when (newProvider) {
+            CloudProvider.GDRIVE -> {
+                binding.guideButton.text =
+                    getString(R.string.storage_edit_cloud_server_guide_button_gdrive)
+                binding.clientIdLayout.helperText =
+                    getString(R.string.storage_edit_cloud_server_client_id_helper_gdrive)
+                binding.clientSecretLayout.helperText =
+                    getString(R.string.storage_edit_cloud_server_client_secret_helper_gdrive)
+                binding.oauthSignInButton.text =
+                    getString(R.string.storage_edit_cloud_server_oauth_sign_in_gdrive)
+            }
+            CloudProvider.ONEDRIVE -> {
+                binding.guideButton.text =
+                    getString(R.string.storage_edit_cloud_server_guide_button_onedrive)
+                binding.clientIdLayout.helperText =
+                    getString(R.string.storage_edit_cloud_server_client_id_helper_onedrive)
+                binding.clientSecretLayout.helperText =
+                    getString(R.string.storage_edit_cloud_server_client_secret_helper_onedrive)
+                binding.oauthSignInButton.text =
+                    getString(R.string.storage_edit_cloud_server_oauth_sign_in_onedrive)
+            }
+            CloudProvider.DROPBOX -> {
+                binding.guideButton.text =
+                    getString(R.string.storage_edit_cloud_server_guide_button_dropbox)
+                binding.clientIdLayout.helperText =
+                    getString(R.string.storage_edit_cloud_server_client_id_helper_dropbox)
+                binding.clientSecretLayout.helperText =
+                    getString(R.string.storage_edit_cloud_server_client_secret_helper_dropbox)
+                binding.oauthSignInButton.text =
+                    getString(R.string.storage_edit_cloud_server_oauth_sign_in_dropbox)
+            }
+        }
+    }
+
+    private fun showSetupGuideDialog() {
+        val currentProvider = provider
+        val (titleRes, messageRes, consoleUrl) = when (currentProvider) {
+            CloudProvider.GDRIVE -> Triple(
+                R.string.storage_edit_cloud_server_guide_title_gdrive,
+                R.string.storage_edit_cloud_server_guide_message_gdrive,
+                "https://console.cloud.google.com/"
+            )
+            CloudProvider.ONEDRIVE -> Triple(
+                R.string.storage_edit_cloud_server_guide_title_onedrive,
+                R.string.storage_edit_cloud_server_guide_message_onedrive,
+                "https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
+            )
+            CloudProvider.DROPBOX -> Triple(
+                R.string.storage_edit_cloud_server_guide_title_dropbox,
+                R.string.storage_edit_cloud_server_guide_message_dropbox,
+                "https://www.dropbox.com/developers/apps"
+            )
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setIcon(R.drawable.information_icon_white_24dp)
+            .setTitle(titleRes)
+            .setMessage(messageRes)
+            .setPositiveButton(R.string.storage_edit_cloud_server_guide_open_console) { _, _ ->
+                startActivitySafe(Intent(Intent.ACTION_VIEW, Uri.parse(consoleUrl)))
+            }
+            .setNegativeButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun updateNamePlaceholder() {

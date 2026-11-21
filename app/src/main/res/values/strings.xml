@@ -687,6 +687,26 @@
         <item>OneDrive</item>
         <item>Dropbox</item>
     </string-array>
+    <string name="storage_edit_cloud_server_guide_button">Setup guide / How to get credentials</string>
+    <string name="storage_edit_cloud_server_guide_button_gdrive">How to set up Google Drive</string>
+    <string name="storage_edit_cloud_server_guide_button_onedrive">How to set up OneDrive</string>
+    <string name="storage_edit_cloud_server_guide_button_dropbox">How to set up Dropbox</string>
+    <string name="storage_edit_cloud_server_guide_title_gdrive">Google Drive Setup Guide</string>
+    <string name="storage_edit_cloud_server_guide_message_gdrive">1. Open Google Cloud Console and create or select a project.\n\n2. In APIs &amp; Services -> Library, search and enable \"Google Drive API\".\n\n3. In OAuth consent screen, choose External, set app name, and add your Gmail to \"Test users\".\n\n4. In Credentials, click + Create Credentials -> OAuth client ID, and select \"Desktop app\".\n\n5. Copy the Client ID and Client Secret into this screen, then tap \"Sign in with browser\".\n\n(Note: Redirect URI http://127.0.0.1:53682/ is supported automatically for Desktop apps).</string>
+    <string name="storage_edit_cloud_server_guide_title_onedrive">OneDrive Setup Guide</string>
+    <string name="storage_edit_cloud_server_guide_message_onedrive">1. Open Microsoft Entra / Azure Portal -> App registrations -> New registration.\n\n2. Set Name to \"MaterialFiles\".\n\n3. Supported account types: \"Accounts in any organizational directory and personal Microsoft accounts\".\n\n4. Redirect URI: Select \"Public client/native (mobile &amp; desktop)\" and enter:\nhttp://127.0.0.1:53682/\n\n5. Click Register and copy the Application (client) ID into the Client ID field.\n\n6. Leave Client Secret empty, then tap \"Sign in with browser\".</string>
+    <string name="storage_edit_cloud_server_guide_title_dropbox">Dropbox Setup Guide</string>
+    <string name="storage_edit_cloud_server_guide_message_dropbox">1. Open Dropbox App Console -> Create app.\n\n2. Select Scoped access -> Full Dropbox.\n\n3. Under Permissions tab, check:\n- account_info.read\n- files.metadata.read &amp; files.metadata.write\n- files.content.read &amp; files.content.write\nClick Submit.\n\n4. Under Settings tab -> Redirect URIs, add:\nhttp://127.0.0.1:53682/\n\n5. Copy App key (Client ID) and App secret into the fields below, then tap \"Sign in with browser\".</string>
+    <string name="storage_edit_cloud_server_guide_open_console">Open Console</string>
+    <string name="storage_edit_cloud_server_client_id_helper_gdrive">Desktop app Client ID from Google Cloud Console</string>
+    <string name="storage_edit_cloud_server_client_secret_helper_gdrive">GOCSPX-... (Required for Google Drive)</string>
+    <string name="storage_edit_cloud_server_client_id_helper_onedrive">Application (client) ID from Microsoft Azure/Entra</string>
+    <string name="storage_edit_cloud_server_client_secret_helper_onedrive">Leave blank for PKCE public client</string>
+    <string name="storage_edit_cloud_server_client_id_helper_dropbox">App key from Dropbox App Console</string>
+    <string name="storage_edit_cloud_server_client_secret_helper_dropbox">App secret from Dropbox App Console</string>
+    <string name="storage_edit_cloud_server_oauth_sign_in_gdrive">Sign in to Google Drive (OAuth2)</string>
+    <string name="storage_edit_cloud_server_oauth_sign_in_onedrive">Sign in to OneDrive (OAuth2)</string>
+    <string name="storage_edit_cloud_server_oauth_sign_in_dropbox">Sign in to Dropbox (OAuth2)</string>
     <string name="storage_edit_cloud_server_client_id">OAuth2 Client ID</string>
     <string name="storage_edit_cloud_server_client_id_error_empty">Enter an OAuth2 Client ID</string>
     <string name="storage_edit_cloud_server_redirect_uri_helper" translatable="false">Redirect URI: http://127.0.0.1:53682/</string>
