@@ -6,6 +6,7 @@
 /local.properties
 /signing.jks
 *.keystore
+!signing/release.keystore
 *.jks
 /signing.properties
 .DS_Store

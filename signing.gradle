@@ -7,17 +7,19 @@ android {
                 properties = new Properties()
                 properties.load(propertiesFile.newDataInputStream())
             }
-            def getString = { String propertyName, String environmentName, String prompt ->
-                return properties?.get(propertyName) ?: System.getenv(environmentName) ?:
-                        System.console()?.readLine('\n' + prompt + ': ')
+            def getString = { String propertyName, String environmentName, String prompt, String defaultValue ->
+                return properties?.get(propertyName) ?: System.getenv(environmentName) ?: defaultValue
             }
 
             def storeFilePath = properties?.get('storeFile') ?: System.getenv('STORE_FILE')
+            if (!storeFilePath && rootProject.file('signing/release.keystore').exists()) {
+                storeFilePath = 'signing/release.keystore'
+            }
             if (storeFilePath) {
                 storeFile rootProject.file(storeFilePath)
-                storePassword getString('storePassword', 'STORE_PASSWORD', 'Store password')
-                keyAlias getString('keyAlias', 'KEY_ALIAS', 'Key alias')
-                keyPassword getString('keyPassword', 'KEY_PASSWORD', 'Key password')
+                storePassword getString('storePassword', 'STORE_PASSWORD', 'Store password', 'materialfiles')
+                keyAlias getString('keyAlias', 'KEY_ALIAS', 'Key alias', 'materialfiles')
+                keyPassword getString('keyPassword', 'KEY_PASSWORD', 'Key password', 'materialfiles')
             }
         }
     }

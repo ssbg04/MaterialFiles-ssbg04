@@ -86,6 +86,11 @@ android {
         warning 'InvalidPackage', 'MissingTranslation'
     }
     buildTypes {
+        debug {
+            if (signingConfigs.release.storeFile != null && signingConfigs.release.storeFile.exists()) {
+                signingConfig signingConfigs.release
+            }
+        }
         release {
             minifyEnabled true
             shrinkResources true

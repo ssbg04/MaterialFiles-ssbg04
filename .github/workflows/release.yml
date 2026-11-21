@@ -52,9 +52,11 @@ jobs:
             echo "Keystore secret found. Decoding..."
             echo "$KEYSTORE_BASE64" | base64 -d > release.keystore
             echo "has_keystore=true" >> "$GITHUB_OUTPUT"
+            echo "store_file=release.keystore" >> "$GITHUB_OUTPUT"
           else
-            echo "No keystore secret found. Build will use debug signature fallback."
-            echo "has_keystore=false" >> "$GITHUB_OUTPUT"
+            echo "Using persistent repository signing/release.keystore."
+            echo "has_keystore=true" >> "$GITHUB_OUTPUT"
+            echo "store_file=signing/release.keystore" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Compute Version
@@ -78,10 +80,10 @@ jobs:
 
       - name: Build APKs with Gradle
         env:
-          STORE_FILE: ${{ steps.keystore.outputs.has_keystore == 'true' && 'release.keystore' || '' }}
-          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          STORE_FILE: ${{ steps.keystore.outputs.store_file }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD || 'materialfiles' }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS || 'materialfiles' }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD || 'materialfiles' }}
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease assembleDebug -x lintVitalRelease -PVERSION_CODE=${{ steps.version.outputs.version_code }} -PVERSION_NAME=${{ steps.version.outputs.version_name }} --stacktrace
