@@ -174,12 +174,12 @@ object OAuth2Helper {
                         <body>
                         <div class="card">
                         <h2>✓ Authentication Successful</h2>
-                        <p>You can close this tab and return to Material Files.</p>
+                        <p>Returning to Material Files to finish setup…</p>
                         <a href="me.zhanghai.android.files://oauth2redirect" class="btn">Return to Material Files</a>
                         </div>
                         <script>
-                        setTimeout(function() { window.location.href = "me.zhanghai.android.files://oauth2redirect"; }, 800);
-                        setTimeout(function() { window.close(); }, 1500);
+                        setTimeout(function() { window.location.href = "me.zhanghai.android.files://oauth2redirect"; }, 500);
+                        setTimeout(function() { window.close(); }, 1200);
                         </script>
                         </body>
                         </html>

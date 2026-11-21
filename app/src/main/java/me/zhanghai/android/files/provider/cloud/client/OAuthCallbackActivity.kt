@@ -25,11 +25,24 @@ class OAuthCallbackActivity : Activity() {
     }
 
     private fun handleIntent(intent: Intent?) {
-        val uri: Uri = intent?.data ?: return
-        val targetIntent = Intent(this, EditCloudServerActivity::class.java).apply {
-            data = uri
-            this.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        val uri: Uri? = intent?.data
+        val uriString = uri?.toString().orEmpty()
+        val (code, _) = if (uriString.isNotEmpty()) {
+            OAuth2Helper.extractCodeFromUrl(uriString)
+        } else {
+            "" to ""
         }
-        startActivity(targetIntent)
+
+        val targetIntent = Intent(this, EditCloudServerActivity::class.java).apply {
+            if (code.isNotEmpty()) {
+                data = uri
+            }
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        try {
+            startActivity(targetIntent)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

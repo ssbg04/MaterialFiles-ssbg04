@@ -21,6 +21,7 @@ import me.zhanghai.android.files.databinding.EditCloudServerFragmentBinding
 import me.zhanghai.android.files.provider.cloud.client.Authentication
 import me.zhanghai.android.files.provider.cloud.client.Authority
 import me.zhanghai.android.files.provider.cloud.client.CloudProvider
+import me.zhanghai.android.files.provider.cloud.client.OAuth2Helper
 import me.zhanghai.android.files.ui.UnfilteredArrayAdapter
 import me.zhanghai.android.files.util.ActionState
 import me.zhanghai.android.files.util.ParcelableArgs
@@ -345,6 +346,10 @@ class EditCloudServerFragment : Fragment() {
 
     fun handleCallbackUri(uri: Uri) {
         val uriString = uri.toString()
+        val (code, _) = OAuth2Helper.extractCodeFromUrl(uriString)
+        if (code.isEmpty()) {
+            return
+        }
         val currentProvider = provider
         val clientId = binding.clientIdEdit.text.toString().trim()
             .ifEmpty { currentProvider.defaultClientId }
@@ -383,6 +388,11 @@ class EditCloudServerFragment : Fragment() {
                 }
                 tokenExpiryMillis = result.authentication.accessTokenExpiryMillis
                 viewModel.finishOAuthSignIn()
+                if (args.server != null) {
+                    saveOrAdd()
+                } else {
+                    connectAndAdd()
+                }
             }
             is ActionState.Error -> {
                 binding.oauthSignInButton.isEnabled = true
