@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import me.zhanghai.android.files.R
 import me.zhanghai.android.files.app.GitHubUpdater
 import me.zhanghai.android.files.databinding.AboutFragmentBinding
 import me.zhanghai.android.files.ui.LicensesDialogFragment
@@ -39,6 +40,15 @@ class AboutFragment : Fragment() {
         activity.supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         binding.checkUpdatesLayout.setOnClickListener {
             GitHubUpdater.checkForUpdates(activity, manual = true)
+        }
+        GitHubUpdater.availableUpdateLiveData.observe(viewLifecycleOwner) { release ->
+            if (release != null) {
+                binding.updateBadge.text =
+                    getString(R.string.update_badge_format, release.tagName)
+                binding.updateBadge.isVisible = true
+            } else {
+                binding.updateBadge.isVisible = false
+            }
         }
         binding.gitHubLayout.setOnClickListener { startActivitySafe(GITHUB_URI.createViewIntent()) }
         binding.licensesLayout.setOnClickListener { LicensesDialogFragment.show(this) }

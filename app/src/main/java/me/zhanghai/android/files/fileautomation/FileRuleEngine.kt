@@ -16,7 +16,10 @@ import java.io.IOException
 
 object FileRuleEngine {
 
-    suspend fun runRule(rule: FileRule, context: Context): Int = withContext(Dispatchers.IO) {
+    suspend fun runRule(rule: FileRule, context: Context): Int =
+        runRuleDetailed(rule, context).size
+
+    suspend fun findMatchingFiles(rule: FileRule): List<Path> = withContext(Dispatchers.IO) {
         val matchingPaths = mutableListOf<Path>()
         collectMatchingFiles(
             directory = rule.sourceDirectory,
@@ -24,6 +27,11 @@ object FileRuleEngine {
             recursive = rule.includeSubdirectories,
             result = matchingPaths
         )
+        matchingPaths
+    }
+
+    suspend fun runRuleDetailed(rule: FileRule, context: Context): List<Path> {
+        val matchingPaths = findMatchingFiles(rule)
         if (matchingPaths.isNotEmpty()) {
             withContext(Dispatchers.Main) {
                 when (rule.action) {
@@ -32,7 +40,20 @@ object FileRuleEngine {
                 }
             }
         }
-        matchingPaths.size
+        return matchingPaths
+    }
+
+    fun undoMove(
+        movedSourcePaths: List<Path>,
+        targetDirectory: Path,
+        originalSourceDirectory: Path,
+        context: Context
+    ) {
+        if (movedSourcePaths.isEmpty()) {
+            return
+        }
+        val movedTargets = movedSourcePaths.map { targetDirectory.resolve(it.name) }
+        FileJobService.move(movedTargets, originalSourceDirectory, context)
     }
 
     private fun collectMatchingFiles(
@@ -41,15 +62,16 @@ object FileRuleEngine {
         recursive: Boolean,
         result: MutableList<Path>
     ) {
+        val excludeTarget = rule.targetDirectory != rule.sourceDirectory &&
+            rule.targetDirectory.fileSystem == rule.sourceDirectory.fileSystem &&
+            rule.targetDirectory.startsWith(rule.sourceDirectory)
         try {
             directory.newDirectoryStream().use { stream ->
                 for (entry in stream) {
                     try {
-                        if (entry == rule.targetDirectory) {
-                            continue
-                        }
-                        if (entry.fileSystem == rule.targetDirectory.fileSystem &&
-                            entry.startsWith(rule.targetDirectory)
+                        if (excludeTarget && (entry == rule.targetDirectory ||
+                                (entry.fileSystem == rule.targetDirectory.fileSystem &&
+                                    entry.startsWith(rule.targetDirectory)))
                         ) {
                             continue
                         }

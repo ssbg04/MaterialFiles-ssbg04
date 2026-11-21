@@ -42,6 +42,7 @@ object CustomThemeHelper {
         activityBaseThemes[activity] = baseThemeRes
         val customThemeRes = getCustomThemeRes(baseThemeRes, activity)
         activity.setThemeCompat(customThemeRes)
+        DynamicColorHelper.applyIfEnabled(activity)
     }
 
     fun sync() {

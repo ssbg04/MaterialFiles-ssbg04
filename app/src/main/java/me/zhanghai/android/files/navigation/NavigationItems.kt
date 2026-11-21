@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Environment
 import android.os.storage.StorageVolume
+import android.text.format.Formatter
 import androidx.annotation.DrawableRes
 import androidx.annotation.Size
 import androidx.annotation.StringRes
@@ -23,10 +24,12 @@ import me.zhanghai.android.files.compat.pathCompat
 import me.zhanghai.android.files.file.JavaFile
 import me.zhanghai.android.files.file.asFileSize
 import me.zhanghai.android.files.ftpserver.FtpServerActivity
+import me.zhanghai.android.files.provider.cloud.client.CloudQuotaCache
 import me.zhanghai.android.files.settings.Settings
 import me.zhanghai.android.files.settings.SettingsActivity
 import me.zhanghai.android.files.settings.StandardDirectoryListActivity
 import me.zhanghai.android.files.storage.AddStorageDialogActivity
+import me.zhanghai.android.files.storage.CloudServer
 import me.zhanghai.android.files.storage.FileSystemRoot
 import me.zhanghai.android.files.storage.Storage
 import me.zhanghai.android.files.storage.StorageVolumeListLiveData
@@ -98,8 +101,32 @@ private class PathStorageItem(
 
     override fun getTitle(context: Context): String = storage.getName(context)
 
-    override fun getSubtitle(context: Context): String? =
-        storage.linuxPath?.let { getStorageSubtitle(it, context) }
+    override fun getSubtitle(context: Context): String? {
+        if (storage is CloudServer) {
+            val quota = CloudQuotaCache.getCached(storage.authority)
+            if (quota != null && quota.usedBytes >= 0L) {
+                val usedString = Formatter.formatShortFileSize(context, quota.usedBytes)
+                return if (quota.totalBytes > 0L) {
+                    val totalString = Formatter.formatShortFileSize(context, quota.totalBytes)
+                    context.getString(R.string.cloud_storage_quota_format, usedString, totalString)
+                } else {
+                    context.getString(R.string.cloud_storage_quota_used_only_format, usedString)
+                }
+            }
+            CloudQuotaCache.fetchAsync(storage.authority) {
+                NavigationItemListLiveData.value = navigationItems
+            }
+            return null
+        }
+        return storage.linuxPath?.let { getStorageSubtitle(it, context) }
+    }
+
+    override fun getQuotaProgress(): Int? =
+        if (storage is CloudServer) {
+            CloudQuotaCache.getCached(storage.authority)?.progressPercent?.takeIf { it >= 0 }
+        } else {
+            null
+        }
 
     override fun onLongClick(listener: Listener): Boolean {
         listener.launchIntent(storage.createEditIntent())

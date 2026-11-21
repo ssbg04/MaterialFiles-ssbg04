@@ -6,12 +6,20 @@
 package me.zhanghai.android.files.app
 
 import android.content.Intent
+import android.graphics.Typeface
 import android.net.Uri
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.BulletSpan
+import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
+import android.text.style.TypefaceSpan
 import android.view.Gravity
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java8.nio.file.Paths
@@ -38,6 +46,9 @@ object GitHubUpdater {
         "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest"
 
     private val hasCheckedAutomatically = AtomicBoolean(false)
+    private val HEADING_REGEX = Regex("^#{1,6}\\s+(.*)$")
+
+    val availableUpdateLiveData = MutableLiveData<ReleaseInfo?>(null)
 
     data class ReleaseInfo(
         val tagName: String,
@@ -56,12 +67,12 @@ object GitHubUpdater {
         }
         activity.lifecycleScope.launch {
             try {
-                val release = withContext(Dispatchers.IO) { fetchLatestRelease() }
+                val updateRelease = fetchAndPublishAvailableUpdate()
                 if (activity.isFinishing || activity.isDestroyed) {
                     return@launch
                 }
-                if (release != null && compareVersions(release.versionName, BuildConfig.VERSION_NAME) > 0) {
-                    showUpdateDialog(activity, release)
+                if (updateRelease != null) {
+                    showUpdateDialog(activity, updateRelease)
                 } else if (manual) {
                     activity.showToast(R.string.update_up_to_date)
                 }
@@ -72,6 +83,25 @@ object GitHubUpdater {
                 }
             }
         }
+    }
+
+    fun checkInBackground(activity: AppCompatActivity) {
+        activity.lifecycleScope.launch {
+            try {
+                fetchAndPublishAvailableUpdate()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private suspend fun fetchAndPublishAvailableUpdate(): ReleaseInfo? {
+        val release = withContext(Dispatchers.IO) { fetchLatestRelease() }
+        val updateRelease = release?.takeIf {
+            compareVersions(it.versionName, BuildConfig.VERSION_NAME) > 0
+        }
+        availableUpdateLiveData.postValue(updateRelease)
+        return updateRelease
     }
 
     private fun fetchLatestRelease(): ReleaseInfo? {
@@ -146,9 +176,136 @@ object GitHubUpdater {
         return 0
     }
 
+    internal fun formatReleaseNotes(markdown: String): CharSequence {
+        val builder = SpannableStringBuilder()
+        val lines = markdown
+            .replace("\r\n", "\n")
+            .replace('\r', '\n')
+            .split('\n')
+            .dropLastWhile { it.isBlank() }
+        var pendingBlankLine = false
+        for (rawLine in lines) {
+            val trimmedEnd = rawLine.trimEnd()
+            if (trimmedEnd.isBlank()) {
+                if (builder.isNotEmpty()) {
+                    pendingBlankLine = true
+                }
+                continue
+            }
+            if (builder.isNotEmpty()) {
+                builder.append('\n')
+                if (pendingBlankLine) {
+                    builder.append('\n')
+                    pendingBlankLine = false
+                }
+            }
+            val trimmed = trimmedEnd.trimStart()
+            val lineStart = builder.length
+            val headingMatch = HEADING_REGEX.matchEntire(trimmed)
+            if (headingMatch != null) {
+                appendFormattedInline(builder, headingMatch.groupValues[1].trimStart())
+                val lineEnd = builder.length
+                if (lineEnd > lineStart) {
+                    builder.setSpan(
+                        StyleSpan(Typeface.BOLD),
+                        lineStart,
+                        lineEnd,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    builder.setSpan(
+                        RelativeSizeSpan(1.08f),
+                        lineStart,
+                        lineEnd,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+                continue
+            }
+            val bulletContent = stripBulletPrefix(trimmed)
+            if (bulletContent != null) {
+                appendFormattedInline(builder, bulletContent.trimStart())
+                val lineEnd = builder.length
+                if (lineEnd > lineStart) {
+                    builder.setSpan(
+                        BulletSpan(24),
+                        lineStart,
+                        lineEnd,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                }
+                continue
+            }
+            appendFormattedInline(builder, trimmed)
+        }
+        return builder
+    }
+
+    private fun stripBulletPrefix(line: String): String? =
+        when {
+            line.startsWith("- ") -> line.substring(2)
+            line.startsWith("* ") -> line.substring(2)
+            line.startsWith("• ") -> line.substring(2)
+            else -> null
+        }
+
+    private fun appendFormattedInline(builder: SpannableStringBuilder, text: String) {
+        var index = 0
+        val length = text.length
+        while (index < length) {
+            if (text.startsWith("**", index)) {
+                val closeIndex = text.indexOf("**", index + 2)
+                if (closeIndex > index + 2) {
+                    val spanStart = builder.length
+                    appendFormattedInline(builder, text.substring(index + 2, closeIndex))
+                    if (builder.length > spanStart) {
+                        builder.setSpan(
+                            StyleSpan(Typeface.BOLD),
+                            spanStart,
+                            builder.length,
+                            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                    }
+                    index = closeIndex + 2
+                    continue
+                }
+                builder.append("**")
+                index += 2
+                continue
+            }
+            if (text[index] == '`') {
+                val closeIndex = text.indexOf('`', index + 1)
+                if (closeIndex > index + 1) {
+                    val spanStart = builder.length
+                    builder.append(text, index + 1, closeIndex)
+                    builder.setSpan(
+                        TypefaceSpan("monospace"),
+                        spanStart,
+                        builder.length,
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                    )
+                    index = closeIndex + 1
+                    continue
+                }
+            }
+            val nextBold = text.indexOf("**", index + 1)
+            val nextCode = text.indexOf('`', index + 1)
+            val nextSpecial = when {
+                nextBold == -1 -> nextCode
+                nextCode == -1 -> nextBold
+                else -> minOf(nextBold, nextCode)
+            }
+            val chunkEnd = if (nextSpecial == -1) length else nextSpecial
+            builder.append(text, index, chunkEnd)
+            index = chunkEnd
+        }
+    }
+
     private fun showUpdateDialog(activity: AppCompatActivity, release: ReleaseInfo) {
-        val notes = release.releaseNotes.ifEmpty {
-            activity.getString(R.string.update_available_default_message, release.tagName)
+        val notes: CharSequence = if (release.releaseNotes.isNotBlank()) {
+            formatReleaseNotes(release.releaseNotes).takeIf { it.isNotBlank() }
+                ?: activity.getString(R.string.update_available_default_message, release.versionName)
+        } else {
+            activity.getString(R.string.update_available_default_message, release.versionName)
         }
         val builder = MaterialAlertDialogBuilder(activity)
             .setTitle(activity.getString(R.string.update_available_title, release.tagName))

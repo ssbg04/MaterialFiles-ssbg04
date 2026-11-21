@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="update_badge_format">Update %1$s</string>
+    <string name="update_badge_available">New</string>
+</resources>

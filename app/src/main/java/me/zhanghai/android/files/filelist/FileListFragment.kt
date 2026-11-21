@@ -51,16 +51,24 @@ import me.zhanghai.android.files.fileautomation.EditFileRuleActivity
 import me.zhanghai.android.files.fileautomation.EditFileRuleFragment
 import me.zhanghai.android.files.fileautomation.FileRuleEngine
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.chip.Chip
+import com.google.android.material.snackbar.Snackbar
 import com.leinardi.android.speeddial.SpeedDialView
 import java8.nio.file.Path
 import java8.nio.file.Paths
 import kotlin.math.roundToInt
 import kotlinx.parcelize.Parcelize
 import me.zhanghai.android.files.R
+import me.zhanghai.android.files.app.GitHubUpdater
 import me.zhanghai.android.files.app.application
+import me.zhanghai.android.files.fileautomation.FileRule
+import me.zhanghai.android.files.fileautomation.FileRuleListActivity
+import me.zhanghai.android.files.fileautomation.FolderRuleBadgeHelper
+import me.zhanghai.android.files.fileautomation.RuleAction
 import me.zhanghai.android.files.app.clipboardManager
 import me.zhanghai.android.files.compat.checkSelfPermissionCompat
 import me.zhanghai.android.files.compat.setGroupDividerEnabledCompat
@@ -259,6 +267,20 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         binding.recyclerView.edgeEffectFactory = SpringOverscrollEdgeEffectFactory()
         adapter = FileListAdapter(this)
         binding.recyclerView.adapter = adapter
+        ItemTouchHelper(
+            FileItemSwipeHelper(
+                isSwipeEnabled = {
+                    viewModel.viewType == FileViewType.LIST &&
+                        viewModel.selectedFiles.isEmpty() &&
+                        viewModel.pickOptions == null
+                },
+                getFileAt = { position ->
+                    if (position in 0 until adapter.itemCount) adapter.getItem(position) else null
+                },
+                onSwipeLeft = { file -> confirmDeleteFile(file) },
+                onSwipeRight = { file -> shareFile(file) }
+            )
+        ).attachToRecyclerView(binding.recyclerView)
         val fastScroller = ThemedFastScroller.create(binding.recyclerView)
         binding.recyclerView.setOnApplyWindowInsetsListener(
             ScrollingViewOnApplyWindowInsetsListener(binding.recyclerView, fastScroller)
@@ -281,6 +303,10 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                         startActivitySafe(AddStorageDialogActivity::class.createIntent())
                         false
                     }
+                }
+                R.id.nav_rules -> {
+                    startActivitySafe(FileRuleListActivity::class.createIntent())
+                    false
                 }
                 R.id.nav_bookmarks -> {
                     binding.drawerLayout?.openDrawer(GravityCompat.START)
@@ -414,7 +440,19 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
             onShowHiddenFilesChanged(it)
         }
         viewModel.currentPathLiveData.observe(viewLifecycleOwner) {
+            updateAutoSortBadge()
             checkAutoRunRules(it)
+        }
+        Settings.FILE_RULES.observe(viewLifecycleOwner) {
+            updateAutoSortBadge()
+        }
+        GitHubUpdater.availableUpdateLiveData.observe(viewLifecycleOwner) { release ->
+            val bottomNav = binding.bottomNavigationView ?: return@observe
+            if (release != null) {
+                bottomNav.getOrCreateBadge(R.id.nav_settings).isVisible = true
+            } else {
+                bottomNav.removeBadge(R.id.nav_settings)
+            }
         }
     }
 
@@ -1496,6 +1534,16 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         }
     }
 
+    private fun updateAutoSortBadge() {
+        FolderRuleBadgeHelper.bind(
+            chip = binding.autoSortBadgeChip,
+            currentPath = currentPath,
+            rules = Settings.FILE_RULES.valueCompat,
+            onRunClick = { runFolderRules() },
+            onLongClick = { startActivitySafe(FileRuleListActivity::class.createIntent()) }
+        )
+    }
+
     private fun runFolderRules() {
         val path = currentPath
         val rules = Settings.FILE_RULES.valueCompat.filter {
@@ -1508,10 +1556,29 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         viewLifecycleOwner.lifecycleScope.launch {
             showToast(R.string.file_rule_running)
             var totalCount = 0
+            val movedBatches = mutableListOf<Pair<FileRule, List<Path>>>()
             for (rule in rules) {
-                totalCount += FileRuleEngine.runRule(rule, requireContext())
+                val matched = FileRuleEngine.runRuleDetailed(rule, requireContext())
+                totalCount += matched.size
+                if (matched.isNotEmpty() && rule.action == RuleAction.MOVE) {
+                    movedBatches.add(rule to matched)
+                }
             }
-            if (totalCount > 0) {
+            if (movedBatches.isNotEmpty()) {
+                val movedCount = movedBatches.sumOf { it.second.size }
+                Snackbar.make(
+                    binding.root,
+                    getString(R.string.file_rule_moved_snackbar, movedCount),
+                    Snackbar.LENGTH_LONG
+                ).setAction(R.string.file_rule_undo) {
+                    val context = requireContext()
+                    for ((rule, matchedPaths) in movedBatches) {
+                        FileRuleEngine.undoMove(
+                            matchedPaths, rule.targetDirectory, rule.sourceDirectory, context
+                        )
+                    }
+                }.show()
+            } else if (totalCount > 0) {
                 showToast(getString(R.string.file_rule_matched_files_total, totalCount))
             } else {
                 showToast(R.string.file_rule_no_files_matched_any)
@@ -1768,6 +1835,7 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val toolbar: Toolbar,
         val overlayToolbar: Toolbar,
         val breadcrumbLayout: BreadcrumbLayout,
+        val autoSortBadgeChip: Chip,
         val contentLayout: ViewGroup,
         val progress: ProgressBar,
         val errorText: TextView,
@@ -1797,7 +1865,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                     bindingRoot, includeBinding.drawerLayout, includeBinding.persistentDrawerLayout,
                     includeBinding.persistentBarLayout, appBarBinding.appBarLayout,
                     appBarBinding.toolbar, appBarBinding.overlayToolbar,
-                    appBarBinding.breadcrumbLayout, contentBinding.contentLayout,
+                    appBarBinding.breadcrumbLayout, appBarBinding.autoSortBadgeChip,
+                    contentBinding.contentLayout,
                     contentBinding.progress, contentBinding.errorText, contentBinding.emptyView,
                     contentBinding.swipeRefreshLayout, contentBinding.recyclerView,
                     bottomBarBinding.bottomBarLayout, bottomBarBinding.bottomToolbar,

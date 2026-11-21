@@ -148,13 +148,32 @@
                                 app:tint="?colorControlNormal" />
 
                             <TextView
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
                                 android:layout_marginStart="@dimen/content_start_from_screen_edge_margin_minus_24dp"
                                 android:ellipsize="end"
                                 android:maxLines="1"
                                 android:text="@string/about_check_updates_title"
                                 android:textAppearance="?textAppearanceListItem" />
+
+                            <TextView
+                                android:id="@+id/updateBadge"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/update_badge_background"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:paddingStart="10dp"
+                                android:paddingTop="3dp"
+                                android:paddingEnd="10dp"
+                                android:paddingBottom="3dp"
+                                android:text="@string/update_badge_available"
+                                android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                                android:textColor="?colorOnPrimary"
+                                android:textStyle="bold"
+                                android:visibility="gone" />
                         </me.zhanghai.android.foregroundcompat.ForegroundLinearLayout>
 
                         <me.zhanghai.android.foregroundcompat.ForegroundLinearLayout

@@ -53,5 +53,16 @@
             android:layout_height="wrap_content"
             android:paddingStart="@dimen/content_start_margin_minus_12dp"
             android:paddingEnd="@dimen/screen_edge_margin_minus_12dp" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/autoSortBadgeChip"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/screen_edge_margin"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone"
+            app:chipIcon="@drawable/filter_icon_control_normal_24dp"
+            app:chipMinHeight="28dp" />
     </me.zhanghai.android.files.ui.CoordinatorAppBarLayout>
 </merge>

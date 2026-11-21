@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Copyright (c) 2026 Material Files Fork
+  -->
+<resources>
+
+    <string name="file_rule_preset_images">Images</string>
+    <string name="file_rule_preset_documents">Documents</string>
+    <string name="file_rule_preset_audio">Audio</string>
+    <string name="file_rule_preset_videos">Videos</string>
+    <string name="file_rule_preset_apks">APKs</string>
+    <string name="file_rule_preset_archives">Archives</string>
+
+    <string name="file_rule_preview_matches">Preview matches</string>
+    <string name="file_rule_preview_title">Matching files (%1$d)</string>
+    <string name="file_rule_preview_empty">No files currently match this rule in the source folder.</string>
+    <string name="file_rule_preview_more">… and %1$d more</string>
+
+    <string name="file_rule_undo">Undo</string>
+    <string name="file_rule_moved_snackbar">Moved %1$d file(s)</string>
+
+    <string name="file_rule_folder_badge">Auto-sort (%1$d)</string>
+</resources>

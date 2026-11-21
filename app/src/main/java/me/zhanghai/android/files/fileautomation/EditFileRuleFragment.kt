@@ -10,8 +10,11 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java8.nio.file.Path
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
@@ -42,6 +45,7 @@ class EditFileRuleFragment : Fragment() {
 
     private var sourceDirectory: Path? = null
     private var targetDirectory: Path? = null
+    private var isSyncingExtensions = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -90,6 +94,7 @@ class EditFileRuleFragment : Fragment() {
         }
 
         updateDirectoryTexts()
+        syncChipsFromExtensionsEdit()
 
         binding.sourcePathEdit.setOnClickListener { onPickSourceDirectory() }
         binding.sourcePathLayout.setEndIconOnClickListener { onPickSourceDirectory() }
@@ -97,7 +102,83 @@ class EditFileRuleFragment : Fragment() {
         binding.targetPathEdit.setOnClickListener { onPickTargetDirectory() }
         binding.targetPathLayout.setEndIconOnClickListener { onPickTargetDirectory() }
 
+        binding.previewButton.setOnClickListener { onPreviewMatches() }
         binding.runNowButton.setOnClickListener { onRunNow() }
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        syncChipsFromExtensionsEdit()
+        for ((chip, presetExtensions) in getPresetChipExtensions()) {
+            chip.setOnCheckedChangeListener { _, isChecked ->
+                if (!isSyncingExtensions) {
+                    onPresetChipToggled(presetExtensions, isChecked)
+                }
+            }
+        }
+        binding.extensionsEdit.doAfterTextChanged {
+            syncChipsFromExtensionsEdit()
+        }
+    }
+
+    private fun getPresetChipExtensions(): List<Pair<Chip, List<String>>> = listOf(
+        binding.chipImages to IMAGES_EXTENSIONS,
+        binding.chipDocuments to DOCUMENTS_EXTENSIONS,
+        binding.chipAudio to AUDIO_EXTENSIONS,
+        binding.chipVideos to VIDEOS_EXTENSIONS,
+        binding.chipApks to APKS_EXTENSIONS,
+        binding.chipArchives to ARCHIVES_EXTENSIONS
+    )
+
+    private fun parseExtensions(text: String): List<String> =
+        text.split(',', ';', ' ', '\t')
+            .map { it.trim().trimStart('*').trimStart('.').lowercase() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+
+    private fun syncChipsFromExtensionsEdit() {
+        if (isSyncingExtensions) {
+            return
+        }
+        isSyncingExtensions = true
+        try {
+            val currentExtensions = parseExtensions(
+                binding.extensionsEdit.text?.toString().orEmpty()
+            ).toSet()
+            for ((chip, presetExtensions) in getPresetChipExtensions()) {
+                val allPresent = presetExtensions.all { it in currentExtensions }
+                if (chip.isChecked != allPresent) {
+                    chip.isChecked = allPresent
+                }
+            }
+        } finally {
+            isSyncingExtensions = false
+        }
+    }
+
+    private fun onPresetChipToggled(presetExtensions: List<String>, isChecked: Boolean) {
+        isSyncingExtensions = true
+        try {
+            val current = parseExtensions(
+                binding.extensionsEdit.text?.toString().orEmpty()
+            ).toMutableList()
+            if (isChecked) {
+                for (ext in presetExtensions) {
+                    if (ext !in current) {
+                        current.add(ext)
+                    }
+                }
+            } else {
+                val presetSet = presetExtensions.toSet()
+                current.removeAll { it in presetSet }
+            }
+            val newText = current.joinToString(", ")
+            binding.extensionsEdit.setText(newText)
+            binding.extensionsEdit.setSelection(newText.length)
+        } finally {
+            isSyncingExtensions = false
+        }
     }
 
     private fun onMenuItemClick(item: MenuItem): Boolean =
@@ -151,7 +232,19 @@ class EditFileRuleFragment : Fragment() {
             binding.targetPathLayout.error = getString(R.string.file_rule_error_same_directory)
             return null
         }
+        return buildRuleWithDirectories(src, tgt)
+    }
 
+    private fun buildRuleForPreview(): FileRule? {
+        val src = sourceDirectory
+        if (src == null) {
+            binding.sourcePathLayout.error = getString(R.string.file_rule_error_source_required)
+            return null
+        }
+        return buildRuleWithDirectories(src, targetDirectory ?: src)
+    }
+
+    private fun buildRuleWithDirectories(src: Path, tgt: Path): FileRule {
         val name = binding.nameEdit.text.toString().trim()
         val ruleName = name.ifEmpty { "${src.name} → ${tgt.name}" }
         val enabled = binding.enabledSwitch.isChecked
@@ -192,6 +285,43 @@ class EditFileRuleFragment : Fragment() {
         finish()
     }
 
+    private fun onPreviewMatches() {
+        val rule = buildRuleForPreview() ?: return
+        binding.previewButton.isEnabled = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val matches = FileRuleEngine.findMatchingFiles(rule)
+                if (!isAdded) {
+                    return@launch
+                }
+                val message = if (matches.isEmpty()) {
+                    getString(R.string.file_rule_preview_empty)
+                } else {
+                    val shownNames = matches.take(PREVIEW_MAX_FILES).map { it.name }
+                    buildString {
+                        append(shownNames.joinToString("\n"))
+                        if (matches.size > PREVIEW_MAX_FILES) {
+                            append("\n\n")
+                            append(
+                                getString(
+                                    R.string.file_rule_preview_more,
+                                    matches.size - PREVIEW_MAX_FILES
+                                )
+                            )
+                        }
+                    }
+                }
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(getString(R.string.file_rule_preview_title, matches.size))
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+            } finally {
+                binding.previewButton.isEnabled = true
+            }
+        }
+    }
+
     private fun onRunNow() {
         val rule = buildRule() ?: return
         viewLifecycleOwner.lifecycleScope.launch {
@@ -210,4 +340,14 @@ class EditFileRuleFragment : Fragment() {
         val rule: FileRule? = null,
         val initialSourceDirectory: @WriteWith<ParcelableParceler> Path? = null
     ) : ParcelableArgs
+
+    companion object {
+        private const val PREVIEW_MAX_FILES = 50
+        private val IMAGES_EXTENSIONS = listOf("jpg", "jpeg", "png", "webp", "gif", "heic")
+        private val DOCUMENTS_EXTENSIONS = listOf("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "md")
+        private val AUDIO_EXTENSIONS = listOf("mp3", "flac", "wav", "m4a", "ogg", "aac")
+        private val VIDEOS_EXTENSIONS = listOf("mp4", "mkv", "webm", "mov", "avi")
+        private val APKS_EXTENSIONS = listOf("apk", "apks", "xapk")
+        private val ARCHIVES_EXTENSIONS = listOf("zip", "rar", "7z", "tar", "gz")
+    }
 }

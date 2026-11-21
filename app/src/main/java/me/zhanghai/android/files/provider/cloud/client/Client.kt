@@ -67,6 +67,8 @@ object Client {
         }
     }
 
+    internal fun getHttpClient(authority: Authority): OkHttpClient = getClient(authority)
+
     private fun rootCloudFile(): CloudFile =
         CloudFile(
             id = "root",

@@ -318,6 +318,7 @@ class FileListAdapter(
                 setImageDrawable(null)
             }
         }
+        holder.mediaBadgeText?.let { MediaBadgeLoader.bind(it, file) }
         holder.nameText.text = file.name
         holder.descriptionText?.text = if (isDirectory) {
             null
@@ -431,7 +432,8 @@ class FileListAdapter(
         val badgeImage: ImageView,
         val nameText: TextView,
         val descriptionText: TextView?,
-        val menuButton: ImageButton
+        val menuButton: ImageButton,
+        val mediaBadgeText: TextView?
     ) : RecyclerView.ViewHolder(root) {
         constructor(binding: FileItemListBinding) : this(
             binding.root,
@@ -446,7 +448,8 @@ class FileListAdapter(
             binding.badgeImage,
             binding.nameText,
             binding.descriptionText,
-            binding.menuButton
+            binding.menuButton,
+            null
         )
 
         constructor(binding: FileItemGridBinding) : this(
@@ -462,7 +465,8 @@ class FileListAdapter(
             binding.badgeImage,
             binding.nameText,
             null,
-            binding.menuButton
+            binding.menuButton,
+            binding.mediaBadgeText
         )
 
         lateinit var popupMenu: PopupMenu

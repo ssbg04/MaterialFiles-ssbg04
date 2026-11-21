@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.h6ah4i.android.widget.advrecyclerview.animator.DraggableItemAnimator
 import com.h6ah4i.android.widget.advrecyclerview.draggable.RecyclerViewDragDropManager
 import com.h6ah4i.android.widget.advrecyclerview.utils.WrapperAdapterUtils
@@ -130,9 +131,33 @@ class FileRuleListFragment : Fragment(), FileRuleListAdapter.Listener {
     override fun runRule(rule: FileRule) {
         viewLifecycleOwner.lifecycleScope.launch {
             showToast(R.string.file_rule_running)
-            val count = FileRuleEngine.runRule(rule, requireContext())
-            if (count > 0) {
-                showToast(getString(R.string.file_rule_matched_files, count, rule.displayName))
+            val matched = FileRuleEngine.runRuleDetailed(rule, requireContext())
+            if (!isAdded) {
+                return@launch
+            }
+            if (matched.isNotEmpty()) {
+                if (rule.action == RuleAction.MOVE) {
+                    Snackbar.make(
+                        binding.root,
+                        getString(R.string.file_rule_moved_snackbar, matched.size),
+                        Snackbar.LENGTH_LONG
+                    )
+                        .setAction(R.string.file_rule_undo) {
+                            context?.let { context ->
+                                FileRuleEngine.undoMove(
+                                    matched,
+                                    rule.targetDirectory,
+                                    rule.sourceDirectory,
+                                    context
+                                )
+                            }
+                        }
+                        .show()
+                } else {
+                    showToast(
+                        getString(R.string.file_rule_matched_files, matched.size, rule.displayName)
+                    )
+                }
             } else {
                 showToast(getString(R.string.file_rule_no_files_matched, rule.displayName))
             }

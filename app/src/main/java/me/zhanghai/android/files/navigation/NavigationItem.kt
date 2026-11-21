@@ -24,6 +24,8 @@ abstract class NavigationItem {
 
     open fun getSubtitle(context: Context): String? = null
 
+    open fun getQuotaProgress(): Int? = null
+
     open fun isChecked(listener: Listener): Boolean = false
 
     abstract fun onClick(listener: Listener)
