@@ -343,6 +343,16 @@ class EditCloudServerFragment : Fragment() {
             .show()
     }
 
+    fun handleCallbackUri(uri: Uri) {
+        val uriString = uri.toString()
+        val currentProvider = provider
+        val clientId = binding.clientIdEdit.text.toString().trim()
+            .ifEmpty { currentProvider.defaultClientId }
+        val clientSecret = binding.clientSecretEdit.text.toString().trim()
+            .ifEmpty { currentProvider.defaultClientSecret }
+        viewModel.completeWithCode(currentProvider, clientId, clientSecret, uriString)
+    }
+
     private fun onOAuthStateChanged(
         state: ActionState<CloudProvider, EditCloudServerViewModel.OAuthResult>
     ) {

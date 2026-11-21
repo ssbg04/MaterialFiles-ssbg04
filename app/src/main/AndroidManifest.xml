@@ -230,7 +230,37 @@
         <activity
             android:name="me.zhanghai.android.files.storage.EditCloudServerActivity"
             android:label="@string/storage_edit_cloud_server_title_edit"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.MaterialFiles" />
+
+        <activity
+            android:name="me.zhanghai.android.files.provider.cloud.client.OAuthCallbackActivity"
+            android:exported="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            tools:ignore="AppLinkUrlError">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="me.zhanghai.android.files"
+                    android:host="oauth2redirect" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="http"
+                    android:host="127.0.0.1"
+                    android:port="53682" />
+                <data
+                    android:scheme="http"
+                    android:host="localhost"
+                    android:port="53682" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name="me.zhanghai.android.files.navigation.EditBookmarkDirectoryDialogActivity"
@@ -370,6 +400,14 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="This is a generic file manager app offering a FTP server functionality that allows serving files from local or network storages to the local network, and users expect it to keep serving in the background for days or even weeks once they start it and until they manually end it, so that this service has to use specialUse to maintain the user expected behavior of keeping serving the files until manually ended." />
+        </service>
+
+        <service
+            android:name="me.zhanghai.android.files.provider.cloud.client.OAuthLoopbackService"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Maintains an active HTTP loopback server and wake lock to receive OAuth2 authorization redirects while the browser is authenticating in the foreground." />
         </service>
 
         <service

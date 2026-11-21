@@ -10,9 +10,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
+import me.zhanghai.android.files.app.application
 import me.zhanghai.android.files.provider.cloud.client.Authentication
 import me.zhanghai.android.files.provider.cloud.client.CloudProvider
 import me.zhanghai.android.files.provider.cloud.client.OAuth2Helper
+import me.zhanghai.android.files.provider.cloud.client.OAuthLoopbackService
 import me.zhanghai.android.files.provider.common.newDirectoryStream
 import me.zhanghai.android.files.util.ActionState
 import me.zhanghai.android.files.util.isFinished
@@ -59,6 +61,8 @@ class EditCloudServerViewModel : ViewModel() {
         val codeChallenge = OAuth2Helper.generateCodeChallenge(codeVerifier)
         val state = OAuth2Helper.generateState()
 
+        OAuthLoopbackService.start(application)
+
         oauthJob = viewModelScope.launch {
             _oauthState.value = ActionState.Running(provider)
             _oauthState.value = try {
@@ -94,6 +98,7 @@ class EditCloudServerViewModel : ViewModel() {
                 ActionState.Error(provider, e)
             } finally {
                 closeActiveSocket()
+                OAuthLoopbackService.stop(application)
             }
         }
     }
@@ -141,6 +146,7 @@ class EditCloudServerViewModel : ViewModel() {
         closeActiveSocket()
         oauthJob?.cancel()
         oauthJob = null
+        OAuthLoopbackService.stop(application)
         _oauthState.value = ActionState.Ready()
     }
 
@@ -190,7 +196,7 @@ class EditCloudServerViewModel : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        closeActiveSocket()
+        cancelOAuthSignIn()
     }
 }
 

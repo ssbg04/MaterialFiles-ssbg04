@@ -159,11 +159,28 @@ object OAuth2Helper {
                         """
                         <!DOCTYPE html>
                         <html>
-                        <head><meta charset="utf-8"><title>Material Files</title></head>
-                        <body style="font-family:sans-serif;text-align:center;padding:40px;">
-                        <h2>Authentication Successful</h2>
+                        <head>
+                        <meta charset="utf-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1">
+                        <title>Material Files</title>
+                        <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 40px 20px; background-color: #fafafa; color: #202124; }
+                        .card { max-width: 400px; margin: 0 auto; background: white; padding: 32px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+                        .btn { display: inline-block; margin-top: 24px; padding: 12px 24px; background-color: #1a73e8; color: white !important; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 15px; }
+                        h2 { color: #1e8e3e; margin-bottom: 12px; }
+                        p { color: #5f6368; line-height: 1.5; margin: 0; }
+                        </style>
+                        </head>
+                        <body>
+                        <div class="card">
+                        <h2>✓ Authentication Successful</h2>
                         <p>You can close this tab and return to Material Files.</p>
-                        <script>window.close();</script>
+                        <a href="me.zhanghai.android.files://oauth2redirect" class="btn">Return to Material Files</a>
+                        </div>
+                        <script>
+                        setTimeout(function() { window.location.href = "me.zhanghai.android.files://oauth2redirect"; }, 800);
+                        setTimeout(function() { window.close(); }, 1500);
+                        </script>
                         </body>
                         </html>
                         """.trimIndent()

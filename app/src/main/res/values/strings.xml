@@ -72,6 +72,10 @@
     <string name="notification_channel_file_job_description">Display and control file operations</string>
     <string name="notification_channel_ftp_server_name">FTP server</string>
     <string name="notification_channel_ftp_server_description">Display and control the FTP server</string>
+    <string name="notification_channel_oauth_loopback_name">Cloud authorization</string>
+    <string name="notification_channel_oauth_loopback_description">Keeps cloud authorization receiver active in the background</string>
+    <string name="oauth_loopback_notification_title">Authorizing cloud storage</string>
+    <string name="oauth_loopback_notification_text">Waiting for authorization from browser…</string>
 
     <string name="file_action_archive_password_title">Password required</string>
     <string name="file_action_archive_password_message_format">“%1$s” is password-protected.</string>
