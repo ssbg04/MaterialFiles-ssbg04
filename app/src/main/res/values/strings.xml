@@ -306,6 +306,10 @@
     <string name="file_list_action_create_shortcut">Create shortcut</string>
     <string name="file_list_breadcrumb_action_copy_path" translatable="false">@string/file_list_action_copy_path</string>
     <string name="file_list_breadcrumb_action_open_in_new_task">Open in new window</string>
+    <string name="file_list_bottom_nav_browse">Browse</string>
+    <string name="file_list_bottom_nav_cloud">Cloud</string>
+    <string name="file_list_bottom_nav_bookmarks">Bookmarks</string>
+    <string name="file_list_bottom_nav_settings">Settings</string>
     <string name="file_list_select_title_format">%1$,d</string>
     <string name="file_list_select_action_extract" translatable="false">@string/file_item_action_extract</string>
     <string name="file_list_select_action_archive" translatable="false">@string/file_item_action_archive</string>
@@ -536,6 +540,9 @@
     <string name="storage_list_title">Storage</string>
     <string name="storage_list_empty">No storage</string>
     <string name="storage_add_storage_title">Add storage</string>
+    <string name="storage_add_section_cloud">Cloud storage</string>
+    <string name="storage_add_section_network">Network &amp; NAS</string>
+    <string name="storage_add_section_local">Local &amp; external</string>
     <string name="storage_add_storage_android_data" translatable="false">Android/data</string>
     <string name="storage_add_storage_android_obb" translatable="false">Android/obb</string>
     <string name="storage_add_storage_document_tree">External storage</string>

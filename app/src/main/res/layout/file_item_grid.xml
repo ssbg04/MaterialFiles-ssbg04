@@ -13,7 +13,8 @@
     android:layout_height="wrap_content"
     android:foreground="?selectableItemBackground"
     android:gravity="center_vertical"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="4dp">
 
     <me.zhanghai.android.files.ui.AspectRatioFrameLayout
         android:layout_width="match_parent"
@@ -73,6 +74,7 @@
             android:layout_width="@dimen/touch_target_size"
             android:layout_height="@dimen/touch_target_size"
             android:layout_marginStart="@dimen/screen_edge_margin_minus_12dp"
+            android:clipToPadding="false"
             android:duplicateParentState="true"
             android:padding="@dimen/touch_target_large_icon_padding">
 

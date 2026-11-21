@@ -39,6 +39,7 @@ import me.zhanghai.android.files.ui.CheckableForegroundLinearLayout
 import me.zhanghai.android.files.ui.CheckableItemBackground
 import me.zhanghai.android.files.util.isMaterial3Theme
 import me.zhanghai.android.files.util.layoutInflater
+import me.zhanghai.android.files.util.performSelectionHaptic
 import me.zhanghai.android.files.util.valueCompat
 import java.util.Locale
 
@@ -244,6 +245,7 @@ class FileListAdapter(
                 }
             }
             setOnLongClickListener {
+                it.performSelectionHaptic()
                 if (selectedFiles.isEmpty()) {
                     selectFile(file)
                 } else {

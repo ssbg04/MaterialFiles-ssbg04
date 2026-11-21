@@ -5,7 +5,9 @@
   ~ All Rights Reserved.
   -->
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <androidx.drawerlayout.widget.DrawerLayout
         android:id="@+id/drawerLayout"
@@ -18,27 +20,43 @@
             android:layout_height="match_parent"
             android:fitsSystemWindows="true">
 
-            <me.zhanghai.android.files.ui.PersistentBarLayout
-                android:id="@+id/persistentBarLayout"
+            <me.zhanghai.android.files.ui.InsetsSplitLinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:fitsSystemWindows="true">
+                android:orientation="vertical">
 
-                <androidx.coordinatorlayout.widget.CoordinatorLayout
+                <me.zhanghai.android.files.ui.PersistentBarLayout
+                    android:id="@+id/persistentBarLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
                     android:fitsSystemWindows="true">
 
-                    <include layout="@layout/file_list_fragment_app_bar_include" />
+                    <androidx.coordinatorlayout.widget.CoordinatorLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:fitsSystemWindows="true">
 
-                    <include layout="@layout/file_list_fragment_content_include" />
+                        <include layout="@layout/file_list_fragment_app_bar_include" />
 
-                </androidx.coordinatorlayout.widget.CoordinatorLayout>
+                        <include layout="@layout/file_list_fragment_content_include" />
 
-                <include layout="@layout/file_list_fragment_bottom_bar_include" />
+                    </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
-                <include layout="@layout/file_list_fragment_speed_dial_include" />
-            </me.zhanghai.android.files.ui.PersistentBarLayout>
+                    <include layout="@layout/file_list_fragment_bottom_bar_include" />
+
+                    <include layout="@layout/file_list_fragment_speed_dial_include" />
+                </me.zhanghai.android.files.ui.PersistentBarLayout>
+
+                <com.google.android.material.bottomnavigation.BottomNavigationView
+                    android:id="@+id/bottomNavigationView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?colorSurface"
+                    app:elevation="8dp"
+                    app:labelVisibilityMode="labeled"
+                    app:menu="@menu/file_list_bottom_nav" />
+            </me.zhanghai.android.files.ui.InsetsSplitLinearLayout>
         </me.zhanghai.android.files.ui.IgnoreFitsSystemWindowsFullyDraggableDrawerContentLayout>
 
         <!--

@@ -48,6 +48,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.leinardi.android.speeddial.SpeedDialView
 import java8.nio.file.Path
 import java8.nio.file.Paths
@@ -83,6 +84,9 @@ import me.zhanghai.android.files.provider.archive.createArchiveRootPath
 import me.zhanghai.android.files.provider.archive.isArchivePath
 import me.zhanghai.android.files.provider.linux.isLinuxPath
 import me.zhanghai.android.files.settings.Settings
+import me.zhanghai.android.files.settings.SettingsActivity
+import me.zhanghai.android.files.storage.AddStorageDialogActivity
+import me.zhanghai.android.files.storage.CloudServer
 import me.zhanghai.android.files.terminal.Terminal
 import me.zhanghai.android.files.ui.AppBarLayoutExpandHackListener
 import me.zhanghai.android.files.ui.CoordinatorAppBarLayout
@@ -94,6 +98,7 @@ import me.zhanghai.android.files.ui.PersistentBarLayoutToolbarActionMode
 import me.zhanghai.android.files.ui.PersistentDrawerLayout
 import me.zhanghai.android.files.ui.ScrollingViewOnApplyWindowInsetsListener
 import me.zhanghai.android.files.ui.SpeedDialViewOnBackPressedCallback
+import me.zhanghai.android.files.ui.SpringOverscrollEdgeEffectFactory
 import me.zhanghai.android.files.ui.ThemedFastScroller
 import me.zhanghai.android.files.ui.ToolbarActionMode
 import me.zhanghai.android.files.util.DebouncedRunnable
@@ -121,6 +126,7 @@ import me.zhanghai.android.files.util.getDimensionDp
 import me.zhanghai.android.files.util.getQuantityString
 import me.zhanghai.android.files.util.hasSw600Dp
 import me.zhanghai.android.files.util.isOrientationLandscape
+import me.zhanghai.android.files.util.performSubtleTick
 import me.zhanghai.android.files.util.putArgs
 import me.zhanghai.android.files.util.setOnEditorConfirmActionListener
 import me.zhanghai.android.files.util.showToast
@@ -239,15 +245,49 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                 true, binding.swipeRefreshLayout.progressViewEndOffset
             )
         }
-        binding.swipeRefreshLayout.setOnRefreshListener { this.refresh() }
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            binding.swipeRefreshLayout.performSubtleTick()
+            this.refresh()
+        }
         layoutManager = GridLayoutManager(activity, 1)
         binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.edgeEffectFactory = SpringOverscrollEdgeEffectFactory()
         adapter = FileListAdapter(this)
         binding.recyclerView.adapter = adapter
         val fastScroller = ThemedFastScroller.create(binding.recyclerView)
         binding.recyclerView.setOnApplyWindowInsetsListener(
             ScrollingViewOnApplyWindowInsetsListener(binding.recyclerView, fastScroller)
         )
+        binding.bottomNavigationView?.setOnItemSelectedListener { item ->
+            binding.bottomNavigationView?.performSubtleTick()
+            when (item.itemId) {
+                R.id.nav_browse -> {
+                    navigateToDefaultRoot()
+                    true
+                }
+                R.id.nav_cloud -> {
+                    val cloudServer = Settings.STORAGES.valueCompat
+                        .filterIsInstance<CloudServer>()
+                        .firstOrNull()
+                    if (cloudServer != null) {
+                        navigateToRoot(cloudServer.path)
+                        true
+                    } else {
+                        startActivitySafe(AddStorageDialogActivity::class.createIntent())
+                        false
+                    }
+                }
+                R.id.nav_bookmarks -> {
+                    binding.drawerLayout?.openDrawer(GravityCompat.START)
+                    false
+                }
+                R.id.nav_settings -> {
+                    startActivitySafe(SettingsActivity::class.createIntent())
+                    false
+                }
+                else -> false
+            }
+        }
         binding.speedDialView.inflate(R.menu.file_list_speed_dial)
         binding.speedDialView.setOnActionSelectedListener {
             when (it.id) {
@@ -1671,7 +1711,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
         val bottomBarLayout: ViewGroup,
         val bottomToolbar: Toolbar,
         val bottomCreateFileNameEdit: EditText,
-        val speedDialView: SpeedDialView
+        val speedDialView: SpeedDialView,
+        val bottomNavigationView: BottomNavigationView? = null
     ) {
         companion object {
             fun inflate(
@@ -1694,7 +1735,8 @@ class FileListFragment : Fragment(), BreadcrumbLayout.Listener, FileListAdapter.
                     contentBinding.progress, contentBinding.errorText, contentBinding.emptyView,
                     contentBinding.swipeRefreshLayout, contentBinding.recyclerView,
                     bottomBarBinding.bottomBarLayout, bottomBarBinding.bottomToolbar,
-                    bottomBarBinding.bottomCreateFileNameEdit, speedDialBinding.speedDialView
+                    bottomBarBinding.bottomCreateFileNameEdit, speedDialBinding.speedDialView,
+                    includeBinding.bottomNavigationView
                 )
             }
         }

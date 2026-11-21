@@ -13,7 +13,9 @@
     android:layout_height="@dimen/two_line_list_item_height"
     android:foreground="?selectableItemBackground"
     android:gravity="center_vertical"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingStart="4dp"
+    android:paddingEnd="4dp">
 
     <FrameLayout
         android:id="@+id/iconLayout"
@@ -24,6 +26,13 @@
         android:clipToPadding="false"
         android:duplicateParentState="true"
         android:padding="@dimen/touch_target_large_icon_padding">
+
+        <View
+            android:layout_width="@dimen/large_icon_size"
+            android:layout_height="@dimen/large_icon_size"
+            android:layout_gravity="center"
+            android:background="@drawable/file_item_icon_badge_background"
+            android:duplicateParentState="true" />
 
         <me.zhanghai.android.files.ui.DisabledAlphaImageView
             android:id="@+id/iconImage"
@@ -88,6 +97,7 @@
             android:id="@+id/descriptionText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
             android:duplicateParentState="true"
             android:ellipsize="end"
             android:maxLines="1"

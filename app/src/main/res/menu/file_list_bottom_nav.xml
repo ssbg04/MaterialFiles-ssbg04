@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_browse"
+        android:icon="@drawable/device_icon_white_24dp"
+        android:title="@string/file_list_bottom_nav_browse" />
+
+    <item
+        android:id="@+id/nav_cloud"
+        android:icon="@drawable/cloud_icon_white_24dp"
+        android:title="@string/file_list_bottom_nav_cloud" />
+
+    <item
+        android:id="@+id/nav_bookmarks"
+        android:icon="@drawable/directory_icon_white_24dp"
+        android:title="@string/file_list_bottom_nav_bookmarks" />
+
+    <item
+        android:id="@+id/nav_settings"
+        android:icon="@drawable/settings_icon_white_24dp"
+        android:title="@string/file_list_bottom_nav_settings" />
+</menu>

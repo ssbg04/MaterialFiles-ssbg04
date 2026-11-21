@@ -15,6 +15,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.LinearLayoutManager
 import java8.nio.file.Path
 import me.zhanghai.android.files.databinding.NavigationFragmentBinding
+import me.zhanghai.android.files.ui.SpringOverscrollEdgeEffectFactory
 import me.zhanghai.android.files.util.startActivitySafe
 
 class NavigationFragment : Fragment(), NavigationItem.Listener {
@@ -41,6 +42,7 @@ class NavigationFragment : Fragment(), NavigationItem.Listener {
         //binding.recyclerView.setItemAnimator(new NoChangeAnimationItemAnimator())
         val context = requireContext()
         binding.recyclerView.layoutManager = LinearLayoutManager(context)
+        binding.recyclerView.edgeEffectFactory = SpringOverscrollEdgeEffectFactory()
         adapter = NavigationListAdapter(this, context)
         binding.recyclerView.adapter = adapter
 
