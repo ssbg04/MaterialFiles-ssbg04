@@ -2,6 +2,9 @@ name: Publish Release
 
 on:
   push:
+    branches:
+      - master
+      - main
     tags:
       - 'v*'
   release:
@@ -9,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: 'Tag name (e.g. v1.7.5)'
+        description: 'Tag name (e.g. v1.7.6)'
         required: false
         default: ''
       prerelease:
@@ -54,6 +57,25 @@ jobs:
             echo "has_keystore=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Compute Version
+        id: version
+        run: |
+          RUN_NUM=${{ github.run_number }}
+          VERSION_CODE=$((40 + RUN_NUM))
+          EXPLICIT_TAG="${{ github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name) || inputs.tag_name }}"
+          if [ -n "$EXPLICIT_TAG" ]; then
+            TAG="$EXPLICIT_TAG"
+            VERSION_NAME="${TAG#v}"
+          else
+            PATCH=$((5 + RUN_NUM))
+            VERSION_NAME="1.7.${PATCH}"
+            TAG="v${VERSION_NAME}"
+          fi
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Computed version: $VERSION_NAME ($VERSION_CODE) -> tag $TAG"
+
       - name: Build APKs with Gradle
         env:
           STORE_FILE: ${{ steps.keystore.outputs.has_keystore == 'true' && 'release.keystore' || '' }}
@@ -62,12 +84,12 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease assembleDebug -x lintVitalRelease --stacktrace
+          ./gradlew assembleRelease assembleDebug -x lintVitalRelease -PVERSION_CODE=${{ steps.version.outputs.version_code }} -PVERSION_NAME=${{ steps.version.outputs.version_name }} --stacktrace
 
       - name: Prepare Release Assets
         id: assets
         run: |
-          TAG="${{ github.event.release.tag_name || (github.ref_type == 'tag' && github.ref_name) || inputs.tag_name || 'v1.7.5' }}"
+          TAG="${{ steps.version.outputs.tag }}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           mkdir -p release_assets
 

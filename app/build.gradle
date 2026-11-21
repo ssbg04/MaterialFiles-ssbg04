@@ -35,8 +35,8 @@ android {
         // Not supporting the ACCESS_LOCAL_NETWORK runtime permission yet.
         //noinspection OldTargetApi
         targetSdk 36
-        versionCode 40
-        versionName '1.7.5'
+        versionCode(project.findProperty('VERSION_CODE')?.toString()?.toInteger() ?: 40)
+        versionName(project.findProperty('VERSION_NAME')?.toString() ?: '1.7.5')
         resValue 'string', 'app_version', versionName + ' (' + versionCode + ')'
         def localProps = new Properties()
         def localPropsFile = rootProject.file('local.properties')
