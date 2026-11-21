@@ -27,6 +27,9 @@ object OAuth2Helper {
     private val secureRandom = SecureRandom()
     private val cloudHttpClient by lazy { okHttpClient.newBuilder().dns(ResilientDns).build() }
 
+    @Volatile
+    var authCodeCallback: ((code: String) -> Unit)? = null
+
     fun generateCodeVerifier(): String {
         val bytes = ByteArray(32)
         secureRandom.nextBytes(bytes)

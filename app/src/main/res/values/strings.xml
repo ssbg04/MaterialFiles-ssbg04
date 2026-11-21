@@ -725,6 +725,7 @@
     <string name="storage_edit_cloud_server_client_secret_placeholder">Optional for PKCE native clients</string>
     <string name="storage_edit_cloud_server_oauth_sign_in">Sign in with browser (OAuth2)</string>
     <string name="storage_edit_cloud_server_oauth_signing_in">Waiting for browser sign-in…</string>
+    <string name="storage_edit_cloud_server_oauth_success">Sign-in successful</string>
     <string name="storage_edit_cloud_server_paste_code_button">Paste redirect URL or code</string>
     <string name="storage_edit_cloud_server_paste_code_dialog_title">Paste Authorization URL or Code</string>
     <string name="storage_edit_cloud_server_paste_code_dialog_message">If browser shows \"This site can\'t be reached\" on 127.0.0.1, copy the entire address from your browser\'s address bar and paste it below:</string>

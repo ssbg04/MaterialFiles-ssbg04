@@ -6,10 +6,10 @@
 package me.zhanghai.android.files.provider.cloud.client
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import me.zhanghai.android.files.storage.EditCloudServerActivity
 
 class OAuthCallbackActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,14 +33,24 @@ class OAuthCallbackActivity : Activity() {
             "" to ""
         }
 
-        val targetIntent = Intent(this, EditCloudServerActivity::class.java).apply {
-            if (code.isNotEmpty()) {
-                data = uri
-            }
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        if (code.isNotEmpty()) {
+            OAuth2Helper.authCodeCallback?.invoke(code)
         }
+
         try {
-            startActivity(targetIntent)
+            val activityManager = getSystemService(ActivityManager::class.java)
+            val moved = activityManager?.appTasks?.firstOrNull()?.let {
+                it.moveToFront()
+                true
+            } ?: false
+            if (!moved) {
+                val fallbackIntent = packageManager.getLaunchIntentForPackage(packageName)?.apply {
+                    flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
+                }
+                if (fallbackIntent != null) {
+                    startActivity(fallbackIntent)
+                }
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }

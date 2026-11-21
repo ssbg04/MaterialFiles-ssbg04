@@ -230,7 +230,6 @@
         <activity
             android:name="me.zhanghai.android.files.storage.EditCloudServerActivity"
             android:label="@string/storage_edit_cloud_server_title_edit"
-            android:launchMode="singleTop"
             android:theme="@style/Theme.MaterialFiles" />
 
         <activity

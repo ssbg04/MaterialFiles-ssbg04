@@ -388,11 +388,7 @@ class EditCloudServerFragment : Fragment() {
                 }
                 tokenExpiryMillis = result.authentication.accessTokenExpiryMillis
                 viewModel.finishOAuthSignIn()
-                if (args.server != null) {
-                    saveOrAdd()
-                } else {
-                    connectAndAdd()
-                }
+                showToast(R.string.storage_edit_cloud_server_oauth_success)
             }
             is ActionState.Error -> {
                 binding.oauthSignInButton.isEnabled = true

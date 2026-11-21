@@ -62,6 +62,9 @@ class EditCloudServerViewModel : ViewModel() {
         val state = OAuth2Helper.generateState()
 
         OAuthLoopbackService.start(application)
+        OAuth2Helper.authCodeCallback = { code ->
+            completeWithCode(provider, clientId, clientSecret, code)
+        }
 
         oauthJob = viewModelScope.launch {
             _oauthState.value = ActionState.Running(provider)
@@ -99,6 +102,7 @@ class EditCloudServerViewModel : ViewModel() {
             } finally {
                 closeActiveSocket()
                 OAuthLoopbackService.stop(application)
+                OAuth2Helper.authCodeCallback = null
             }
         }
     }
@@ -147,6 +151,7 @@ class EditCloudServerViewModel : ViewModel() {
         oauthJob?.cancel()
         oauthJob = null
         OAuthLoopbackService.stop(application)
+        OAuth2Helper.authCodeCallback = null
         _oauthState.value = ActionState.Ready()
     }
 
