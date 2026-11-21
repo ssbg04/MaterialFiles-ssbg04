@@ -14,6 +14,7 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.fragment.app.commit
 import java8.nio.file.Path
 import me.zhanghai.android.files.app.AppActivity
+import me.zhanghai.android.files.app.GitHubUpdater
 import me.zhanghai.android.files.file.MimeType
 import me.zhanghai.android.files.util.createIntent
 import me.zhanghai.android.files.util.extraPath
@@ -34,6 +35,7 @@ class FileListActivity : AppActivity() {
             fragment = supportFragmentManager.findFragmentById(android.R.id.content)
                 as FileListFragment
         }
+        GitHubUpdater.checkForUpdates(this, manual = false)
     }
 
     override fun onKeyShortcut(keyCode: Int, event: KeyEvent): Boolean {

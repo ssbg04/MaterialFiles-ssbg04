@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import me.zhanghai.android.files.app.GitHubUpdater
 import me.zhanghai.android.files.databinding.AboutFragmentBinding
 import me.zhanghai.android.files.ui.LicensesDialogFragment
 import me.zhanghai.android.files.util.createViewIntent
@@ -36,6 +37,9 @@ class AboutFragment : Fragment() {
         val activity = requireActivity() as AppCompatActivity
         activity.setSupportActionBar(binding.toolbar)
         activity.supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+        binding.checkUpdatesLayout.setOnClickListener {
+            GitHubUpdater.checkForUpdates(activity, manual = true)
+        }
         binding.gitHubLayout.setOnClickListener { startActivitySafe(GITHUB_URI.createViewIntent()) }
         binding.licensesLayout.setOnClickListener { LicensesDialogFragment.show(this) }
 //#ifdef NONFREE
@@ -44,6 +48,12 @@ class AboutFragment : Fragment() {
             startActivitySafe(PRIVACY_POLICY_URI.createViewIntent())
         }
 //#endif
+        binding.forkAuthorLayout.setOnClickListener {
+            startActivitySafe(FORK_AUTHOR_GITHUB_URI.createViewIntent())
+        }
+        binding.forkRepoLayout.setOnClickListener {
+            startActivitySafe(GITHUB_URI.createViewIntent())
+        }
         binding.authorNameLayout.setOnClickListener {
             startActivitySafe(AUTHOR_RESUME_URI.createViewIntent())
         }
@@ -56,7 +66,8 @@ class AboutFragment : Fragment() {
     }
 
     companion object {
-        private val GITHUB_URI = Uri.parse("https://github.com/zhanghai/MaterialFiles")
+        private val GITHUB_URI = Uri.parse("https://github.com/ssbg04/MaterialFiles-ssbg04")
+        private val FORK_AUTHOR_GITHUB_URI = Uri.parse("https://github.com/ssbg04")
         private val PRIVACY_POLICY_URI =
             Uri.parse("https://github.com/zhanghai/MaterialFiles/blob/master/PRIVACY.md")
         private val AUTHOR_RESUME_URI = Uri.parse("https://resume.zhanghai.me/")
